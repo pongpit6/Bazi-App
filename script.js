@@ -7,7 +7,8 @@ let dmStrengthData = {};
 let savedRecordsList = [];
 let partnerBaZiData = {};
 let currentKongWang = ""; 
-let currentVaults = {}; // 🌟 เก็บข้อมูลคลังสมบัติของดวงนี้
+let currentVaults = {}; 
+let elementCounts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 }; // 🌟 เก็บเปอร์เซ็นต์ธาตุ
 
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳', thName: 'ไม้หยาง' }, '乙': { type: 'wood', icon: '🌿', thName: 'ไม้หยิน' },
@@ -85,23 +86,15 @@ const interactions = {
     earthlyDestructions: { '子':'酉', '酉':'子', '丑':'辰', '辰':'丑', '寅':'亥', '亥':'寅', '卯':'午', '午':'卯', '巳':'申', '申':'巳', '未':'戌', '戌':'未' }
 };
 
-// 🌟 ระบบคำนวณคลังขุมทรัพย์ (Vaults) 🌟
 function calculateVaults(dayGan) {
     if (!dayGan) return {};
     const dmType = elementMap[dayGan].type;
-    
-    // นิยามของสุสาน 4 ฤดู: 辰(น้ำ), 未(ไม้), 戌(ไฟ/ดิน), 丑(ทอง)
     const vaultElements = { 'water': '辰', 'wood': '未', 'fire': '戌', 'earth': '戌', 'metal': '丑' };
-    
     const generatingMap = { 'wood': 'water', 'fire': 'wood', 'earth': 'fire', 'metal': 'earth', 'water': 'metal' };
     const conqueringMap = { 'wood': 'earth', 'fire': 'metal', 'earth': 'water', 'metal': 'wood', 'water': 'fire' };
     const conqueredByMap = { 'wood': 'metal', 'fire': 'water', 'earth': 'wood', 'metal': 'fire', 'water': 'earth' };
 
-    return {
-        wealthVault: vaultElements[conqueringMap[dmType]],  // คลังสมบัติ (ไฉ่โข่ว)
-        powerVault: vaultElements[conqueredByMap[dmType]],  // คลังอำนาจ (กัวโข่ว)
-        resourceVault: vaultElements[generatingMap[dmType]] // คลังอุปถัมภ์ (อิ่งโข่ว)
-    };
+    return { wealthVault: vaultElements[conqueringMap[dmType]], powerVault: vaultElements[conqueredByMap[dmType]], resourceVault: vaultElements[generatingMap[dmType]] };
 }
 
 function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
@@ -110,7 +103,6 @@ function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
     if ({ '申':'酉', '子':'酉', '辰':'酉', '亥':'子', '卯':'子', '未':'子', '寅':'卯', '午':'卯', '戌':'卯', '巳':'午', '酉':'午', '丑':'午' }[yearZhi] === branch || { '申':'酉', '子':'酉', '辰':'酉', '亥':'子', '卯':'子', '未':'子', '寅':'卯', '午':'卯', '戌':'卯', '巳':'午', '酉':'午', '丑':'午' }[dayZhi] === branch) stars.push({name: '🌸 ดาวดอกท้อ', desc: 'มีเสน่ห์ดึงดูด เป็นที่รักและเมตตา', icon: '🌸'});
     if ({ '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[yearZhi] === branch || { '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[dayZhi] === branch) stars.push({name: '🐎 ดาวม้าเดินทาง', desc: 'มีเกณฑ์โยกย้าย เดินทางบ่อย', icon: '🐎'});
     
-    // 🌟 เช็คว่าเป็นคลังอะไรไหม 🌟
     if (currentVaults.wealthVault === branch) stars.push({name: '💰 คลังสมบัติ (ไฉ่โข่ว)', desc: 'สะสมความมั่งคั่ง เก็บเงินอยู่', icon: '💰', isVault: true});
     if (currentVaults.powerVault === branch) stars.push({name: '🏛️ คลังอำนาจ', desc: 'สะสมบารมี ตำแหน่งหน้าที่การงาน', icon: '🏛️', isVault: true});
     if (currentVaults.resourceVault === branch) stars.push({name: '📚 คลังอุปถัมภ์', desc: 'สะสมปัญญา มีผู้ใหญ่คอยหนุนหลัง', icon: '📚', isVault: true});
@@ -158,23 +150,29 @@ function getBoxInnerHtml(char, contextStars = [], isKongWang = false) {
 function renderBox(elementId, chineseChar, type, isEarth = false) {
     const box = document.getElementById(elementId);
     const data = elementMap[chineseChar] || { type: '' };
-    box.classList.remove('wood', 'fire', 'earth', 'metal', 'water');
+    box.classList.remove('wood', 'fire', 'earth', 'metal', 'water', 'fav-element', 'unfav-element');
     
     let stars = [];
     let isKw = false;
     
     if (isEarth) {
-        if (currentBaZiData.day && currentBaZiData.day.gan) {
-            stars = checkSpecialStars(chineseChar, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
-        }
+        if (currentBaZiData.day && currentBaZiData.day.gan) stars = checkSpecialStars(chineseChar, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
         if (currentKongWang.includes(chineseChar)) isKw = true;
     }
     
     box.innerHTML = getBoxInnerHtml(chineseChar, stars, isKw);
+    
     if(data.type) {
         box.classList.add(data.type);
         if(isKw) box.style.opacity = '0.6';
         else box.style.opacity = '1';
+
+        // 🌟 Visual Yong Shen (ไฮไลต์ธาตุให้คุณ/ให้โทษ) 🌟
+        if (dmStrengthData.favTypes && dmStrengthData.favTypes.includes(data.type)) {
+            box.classList.add('fav-element');
+        } else if (dmStrengthData.unfavTypes && dmStrengthData.unfavTypes.includes(data.type)) {
+            box.classList.add('unfav-element');
+        }
     }
 }
 
@@ -210,13 +208,13 @@ function updateShiShenLabels(dataObj, prefix, dayGan) {
 }
 
 function renderElementChart() {
-    let counts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
+    elementCounts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
     let total = 0;
     
     const addPts = (char, pts) => {
         if(!char) return;
         const type = elementMap[char]?.type;
-        if(type) { counts[type] += pts; total += pts; }
+        if(type) { elementCounts[type] += pts; total += pts; }
     };
 
     ['year', 'month', 'day', 'hour'].forEach(p => {
@@ -235,8 +233,8 @@ function renderElementChart() {
     
     let html = `<h3 style="margin-top:0; font-size:15px; color:#1565c0; text-align:center;">📊 สัดส่วนพลังงาน 5 ธาตุ</h3><div style="display:flex; flex-direction:column; gap:8px; margin-top:15px;">`;
     
-    for(let t in counts) {
-        let pct = total > 0 ? Math.round((counts[t] / total) * 100) : 0;
+    for(let t in elementCounts) {
+        let pct = total > 0 ? Math.round((elementCounts[t] / total) * 100) : 0;
         html += `<div style="display:flex; align-items:center; font-size:13px;">
             <span style="width:35px; font-weight:bold; color:${colors[t]}">${thNames[t]}</span>
             <div style="flex:1; background:#e0e0e0; height:12px; border-radius:6px; overflow:hidden; margin:0 10px;">
@@ -287,7 +285,18 @@ function calculateDMStrength() {
     let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
     let supportingTh = `${thTypeMap[supportType]}, ${thTypeMap[dmType]}`;
 
-    dmStrengthData = { score: score, status: score >= 50 ? "แข็งแรง (Strong)" : "อ่อนแอ (Weak)", favorable: score >= 50 ? weakeningTh : supportingTh, unfavorable: score >= 50 ? supportingTh : weakeningTh };
+    // 🌟 อัปเดตการเก็บอาร์เรย์ของธาตุที่ให้คุณ/ให้โทษ เพื่อนำไปไฮไลต์สี 🌟
+    let favArr = score >= 50 ? weakeningTypes : [supportType, dmType];
+    let unfavArr = score >= 50 ? [supportType, dmType] : weakeningTypes;
+
+    dmStrengthData = { 
+        score: score, 
+        status: score >= 50 ? "แข็งแรง (Strong)" : "อ่อนแอ (Weak)", 
+        favorable: score >= 50 ? weakeningTh : supportingTh, 
+        unfavorable: score >= 50 ? supportingTh : weakeningTh,
+        favTypes: favArr,
+        unfavTypes: unfavArr
+    };
 
     const dmBox = document.getElementById('dm-strength-box');
     let dmHtml = `<div class="dm-strength-title">กำลังของดิถี (Day Master Strength)</div>`;
@@ -297,13 +306,13 @@ function calculateDMStrength() {
         dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-strong">💪 ดิถีแข็งแรง (Strong)</span> (คะแนน ${score}/100)</p>`;
         dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
         dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่แข็งแรง:</strong> มีธาตุส่งเสริมอยู่มาก (เช่น <strong>${supportingElements[0]}</strong>)</p>`;
-        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ปรับสมดุล):</strong> ธาตุ${weakeningTh}</p>`;
+        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ควรเสริม):</strong> ธาตุ${weakeningTh}</p>`;
         dmHtml += `</div>`;
     } else {
         dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-weak">🍃 ดิถีอ่อนแอ (Weak)</span> (คะแนน ${score}/100)</p>`;
         dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
         dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่อ่อนแอ:</strong> มีธาตุบั่นทอนอยู่มาก (เช่น <strong>${weakeningElements[0]}</strong>)</p>`;
-        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ปรับสมดุล):</strong> ธาตุ${supportingTh}</p>`;
+        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ควรเสริม):</strong> ธาตุ${supportingTh}</p>`;
         dmHtml += `</div>`;
     }
 
@@ -370,7 +379,6 @@ function showPopup(titleName, elementId, type) {
         if(type === 'natal') {
             htmlContent += `<p><strong>ราศีแฝง:</strong> <span style="color:#d32f2f; font-weight:bold;">${hiddenGanMap[char].join(', ')}</span></p>`;
 
-            // เช็คปะทะในดวง
             pillarsToCheck.forEach(p => {
                 if (p !== pillar) {
                     const otherChar = currentBaZiData[p].zhi;
@@ -382,7 +390,6 @@ function showPopup(titleName, elementId, type) {
                 }
             });
 
-            // เช็ควัยจร ปีจร ปะทะ
             let dyZhi = activeDaYunData.zhi;
             if (interactions.earthlyCombos[char] === dyZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', pillarContextMap[pillar]);
             if (interactions.earthlyClashes[char] === dyZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', pillarContextMap[pillar]);
@@ -403,7 +410,6 @@ function showPopup(titleName, elementId, type) {
                     if (interactions.earthlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', pillarContextMap[p]);
                     if (interactions.earthlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', pillarContextMap[p]);
                     
-                    // 🌟 เช็คว่าเวลาปัจจุบันวิ่งเข้ามาเป็น "คลัง" ให้เจ้าชะตาไหม 🌟
                     if (char === currentVaults.wealthVault) relationHtml += `<p style="color:#e65100; font-size: 0.95em; font-weight:bold;">💰 เวลานี้เข้ามาเปิด <b>คลังสมบัติ</b> ให้คุณ!</p>` + getAdviceText('vault', '');
                     if (char === currentVaults.powerVault) relationHtml += `<p style="color:#e65100; font-size: 0.95em; font-weight:bold;">🏛️ เวลานี้เข้ามาเปิด <b>คลังอำนาจ</b> ให้คุณ!</p>` + getAdviceText('vault', '');
                     if (char === currentVaults.resourceVault) relationHtml += `<p style="color:#e65100; font-size: 0.95em; font-weight:bold;">📚 เวลานี้เข้ามาเปิด <b>คลังอุปถัมภ์</b> ให้คุณ!</p>` + getAdviceText('vault', '');
@@ -502,8 +508,10 @@ function calculateBaZi() {
         hour: { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi(), naYin: bazi.getTimeNaYin(), diShi: bazi.getTimeDiShi() }
     };
 
-    // 🌟 คำนวณคลังสมบัติของดวงนี้ 🌟
     currentVaults = calculateVaults(currentBaZiData.day.gan);
+
+    // 🌟 ต้องเรียกฟังก์ชันคำนวณกำลังดิถี "ก่อน" เพื่อให้รู้ธาตุดี/ร้าย สำหรับการไฮไลต์กล่อง 🌟
+    calculateDMStrength();
 
     ['year', 'month', 'day', 'hour'].forEach(p => {
         renderBox(`${p}-heaven`, currentBaZiData[p].gan, 'natal', false);
@@ -529,7 +537,6 @@ function calculateBaZi() {
     const currentLYear = Solar.fromYmd(currentYear, 6, 1).getLunar();
     activeLiuNianData = { gan: currentLYear.getYearGan(), zhi: currentLYear.getYearZhi(), year: currentYear };
 
-    calculateDMStrength(); 
     renderLuck(solar, genderInput === 'ชาย' ? 1 : 0);
 
     document.getElementById('ai-result-box').style.display = "none";
@@ -616,67 +623,66 @@ function renderLuck(solar, genderNum) {
     }
 }
 
-// 🌟 อัปเกรด คัมภีร์ดวงชะตาส่วนตัว 🌟
+// 🌟 ระบบจัดการ TABS ในคัมภีร์ดวงชะตา 🌟
+function openEncycTab(evt, tabName) {
+    let i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("tab-link");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    document.getElementById(tabName).classList.add("active");
+    if(evt) evt.currentTarget.className += " active";
+}
+
 function openEncyclopedia() {
     if (!currentBaZiData.day) return alert("กรุณาคำนวณผูกดวงก่อนเปิดคัมภีร์ครับ");
     
-    let html = '';
     const dmGan = currentBaZiData.day.gan;
     const dmType = elementMap[dmGan].thName;
 
-    // 1. อธิบายดิถี
+    let html = '';
+
+    // --- TAB 1: พื้นฐาน / ธาตุที่ขาดหาย ---
+    html += `<div id="tab-basic" class="tab-content active">`;
     html += `<div class="encyc-section">
                 <h3 class="encyc-title">👤 ดิถีตัวตน (Day Master)</h3>
                 <p>ดิถีของคุณคือ <b>${dmType} (${dmGan})</b> ซึ่งเป็นตัวแทนแก่นแท้ของจิตวิญญาณคุณ</p>
-                <p>${dmStrengthData.status} ทำให้คุณต้องการ <b>ธาตุ${dmStrengthData.favorable}</b> เพื่อสร้างความสมดุลและความรุ่งโรจน์ในชีวิต</p>
+                <p>${dmStrengthData.status} ทำให้คุณต้องการ <b>ธาตุ${dmStrengthData.favorable}</b> เพื่อสร้างสมดุลในชีวิต (เป็นธาตุให้คุณ)</p>
              </div>`;
 
-    // 2. ปฏิกิริยาภายในดวงกำเนิด (Internal Interactions)
-    let internalClashes = [];
-    const pillars = ['year', 'month', 'day', 'hour'];
-    for(let i=0; i<pillars.length; i++) {
-        for(let j=i+1; j<pillars.length; j++) {
-            let p1 = pillars[i]; let p2 = pillars[j];
-            let zhi1 = currentBaZiData[p1].zhi; let zhi2 = currentBaZiData[p2].zhi;
-            
-            if(interactions.earthlyClashes[zhi1] === zhi2) internalClashes.push(`💥 <b>ชง (ปะทะ):</b> เสา${pillarNamesTh[p1]} ชง เสา${pillarNamesTh[p2]} (มักมีการเปลี่ยนแปลง แตกหัก หรือชีพจรลงเท้าในเรื่องของสองเสานี้)`);
-            if(interactions.earthlyCombos[zhi1] === zhi2) internalClashes.push(`🤝 <b>ฮะ (ผูกพัน):</b> เสา${pillarNamesTh[p1]} ฮะ เสา${pillarNamesTh[p2]} (มีความรักใคร่ ผูกพัน และช่วยเหลือกันเหนียวแน่น)`);
-            if(interactions.earthlyPunishments[zhi1] && interactions.earthlyPunishments[zhi1].includes(zhi2)) internalClashes.push(`⚠️ <b>เฮ้ง (เบียดเบียน):</b> เสา${pillarNamesTh[p1]} เฮ้ง เสา${pillarNamesTh[p2]} (มักเกิดความอึดอัดใจ วุ่นวาย หรือกดดันระหว่างกัน)`);
-            if(interactions.earthlyHarms[zhi1] === zhi2) internalClashes.push(`⚡ <b>ไห่ (ให้ร้าย):</b> เสา${pillarNamesTh[p1]} ไห่ เสา${pillarNamesTh[p2]} (ระวังการถูกเอาเปรียบ ขัดขวาง หรือปัญหาสุขภาพซ่อนเร้น)`);
-            if(interactions.earthlyDestructions[zhi1] === zhi2) internalClashes.push(`🔨 <b>ผั่ว (แตกหัก):</b> เสา${pillarNamesTh[p1]} ผั่ว เสา${pillarNamesTh[p2]} (สิ่งที่สร้างไว้มักมีเหตุให้ต้องพังทลายแล้วสร้างใหม่)`);
-        }
+    // เช็คธาตุที่ขาดหาย
+    let missingElements = [];
+    const thNames = { wood: 'ไม้', fire: 'ไฟ', earth: 'ดิน', metal: 'ทอง', water: 'น้ำ' };
+    const missingAdvice = {
+        wood: 'ขาดความยืดหยุ่น การเติบโต และความเมตตา -> ควรปลูกต้นไม้ อ่านหนังสือ พัฒนาตัวเองเสมอ',
+        fire: 'ขาดความกระตือรือร้น ความสุข การแสดงออก -> ควรหาแพสชั่น รอยยิ้ม และการเข้าสังคม',
+        earth: 'ขาดความมั่นคง หนักแน่น ความน่าเชื่อถือ -> ควรสร้างวินัย รักษาคำพูด ทำสมาธิ',
+        metal: 'ขาดความเด็ดขาด ยุติธรรม การตัดสินใจ -> ควรกล้าตัดสินใจ จัดระเบียบชีวิตให้ชัดเจน',
+        water: 'ขาดปัญญา ไหวพริบ การปรับตัว -> ควรเรียนรู้สิ่งใหม่ๆ พลิกแพลงให้ลื่นไหลเหมือนน้ำ'
+    };
+
+    for(let t in elementCounts) {
+        if(elementCounts[t] === 0) missingElements.push(`<li><b>ธาตุ${thNames[t]}:</b> ${missingAdvice[t]}</li>`);
     }
 
     html += `<div class="encyc-section">
-                <h3 class="encyc-title">⚡ ปฏิสัมพันธ์ในพื้นดวงกำเนิด (ชง ฮะ เฮ้ง)</h3>
-                <p style="font-size:13px; color:#666;">โชคชะตาที่ถูกสลักไว้ตั้งแต่เกิด (ดวงชะตามีการเคลื่อนไหวอยู่ตลอดเวลา):</p>`;
-    if (internalClashes.length > 0) {
-        internalClashes.forEach(clash => { html += `<div class="encyc-item">${clash}</div>`; });
+                <h3 class="encyc-title">⚠️ ธาตุที่ขาดหาย (Missing Elements)</h3>`;
+    if(missingElements.length > 0) {
+        html += `<p style="font-size:13px; color:#666;">ในดวงกำเนิดของคุณไม่มีธาตุเหล่านี้ (แม้แต่ในราศีแฝง) ซึ่งส่งผลต่อจุดอ่อนในนิสัย:</p>
+                 <ul style="margin:0; padding-left:20px;">${missingElements.join('')}</ul>`;
     } else {
-        html += `<p>พื้นดวงสงบนิ่ง ไม่มีปฏิกิริยาปะทะหรือผูกพันที่รุนแรง</p>`;
+        html += `<p>ยินดีด้วยครับ! ดวงของคุณมีธาตุทั้ง 5 ครบถ้วน (เบญจธาตุสมดุล) ทำให้คุณเป็นคนที่มีความสมบูรณ์ในแง่ของจิตวิญญาณและการใช้ชีวิต</p>`;
     }
-    html += `</div>`;
+    html += `</div></div>`;
 
-    // 3. คลังสมบัติและขุมพลัง (Vaults)
-    let foundVaults = [];
-    pillars.forEach(p => {
-        let zhi = currentBaZiData[p].zhi;
-        if(zhi === currentVaults.wealthVault) foundVaults.push(`💰 <b>ไฉ่โข่ว (คลังสมบัติ)</b> อยู่ที่ เสา${pillarNamesTh[p]}: ดวงมีคลังเก็บเงิน หากเจอปีจรมาชนเปิดคลัง จะรวยพลิกชีวิต!`);
-        if(zhi === currentVaults.powerVault) foundVaults.push(`🏛️ <b>กัวโข่ว (คลังอำนาจ)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีวาสนาบารมีซ่อนอยู่ เป็นผู้นำลับๆ`);
-        if(zhi === currentVaults.resourceVault) foundVaults.push(`📚 <b>อิ่งโข่ว (คลังอุปถัมภ์)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีปัญญาและผู้ใหญ่หนุนหลังแบบคาดไม่ถึง`);
-    });
-
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">🔐 คลังขุมทรัพย์ (The Vaults)</h3>`;
-    if (foundVaults.length > 0) {
-        foundVaults.forEach(v => { html += `<div class="encyc-item">${v}</div>`; });
-    } else {
-        html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง (เงินหรือโอกาสเข้ามารวดเร็วและผ่านไปเร็ว ต้องอาศัยการออมด้วยตัวเอง)</p>
-                 <p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`;
-    }
-    html += `</div>`;
-
-    // 4. อธิบาย 10 เทพในดวง
+    // --- TAB 2: 10 เทพ ---
+    html += `<div id="tab-gods" class="tab-content" style="display:none;">`;
     let godsInChart = new Set();
     ['year', 'month', 'hour'].forEach(p => {
         let gan = currentBaZiData[p].gan;
@@ -695,20 +701,98 @@ function openEncyclopedia() {
     } else {
         html += `<p>ไม่พบสิบเทพที่เด่นชัดในราศีบน</p>`;
     }
+    html += `</div></div>`;
+
+    // --- TAB 3: ดาวพิเศษ / คลัง / คงบ้วง ---
+    html += `<div id="tab-stars" class="tab-content" style="display:none;">`;
+    
+    // คลัง
+    let foundVaults = [];
+    ['year', 'month', 'day', 'hour'].forEach(p => {
+        let zhi = currentBaZiData[p].zhi;
+        if(zhi === currentVaults.wealthVault) foundVaults.push(`💰 <b>ไฉ่โข่ว (คลังสมบัติ)</b> อยู่ที่ เสา${pillarNamesTh[p]}: ดวงมีคลังเก็บเงิน หากเจอปีจรมาชนเปิดคลัง จะรวยพลิกชีวิต!`);
+        if(zhi === currentVaults.powerVault) foundVaults.push(`🏛️ <b>กัวโข่ว (คลังอำนาจ)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีวาสนาบารมีซ่อนอยู่ เป็นผู้นำลับๆ`);
+        if(zhi === currentVaults.resourceVault) foundVaults.push(`📚 <b>อิ่งโข่ว (คลังอุปถัมภ์)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีปัญญาและผู้ใหญ่หนุนหลังแบบคาดไม่ถึง`);
+    });
+
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">🔐 คลังขุมทรัพย์ (The Vaults)</h3>`;
+    if (foundVaults.length > 0) {
+        foundVaults.forEach(v => { html += `<div class="encyc-item">${v}</div>`; });
+    } else {
+        html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง (เงินหรือโอกาสเข้ามารวดเร็วและผ่านไปเร็ว ต้องอาศัยการออมด้วยตัวเอง)</p>
+                 <p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`;
+    }
     html += `</div>`;
 
-    // 5. คงบ้วง
+    // คงบ้วง
     html += `<div class="encyc-section">
                 <h3 class="encyc-title">🕳️ ดาวคงบ้วง (ตำแหน่งสูญสิ้น)</h3>
                 <p>นักษัตรคงบ้วงของคุณคือ: <b>${currentKongWang}</b></p>
                 <p style="font-size:13.5px;">หากนักษัตรเหล่านี้ปรากฏในดวง หรือวิ่งเข้ามาในปีจร จะทำให้พลังงานเรื่องนั้นว่างเปล่า หรือต้องเหนื่อยกว่าปกติถึงจะได้มา</p>
              </div>`;
+    html += `</div>`;
+
+    // --- TAB 4: ปฏิสัมพันธ์ (ชง ฮะ) ---
+    html += `<div id="tab-interact" class="tab-content" style="display:none;">`;
+    let internalClashes = [];
+    const pillars = ['year', 'month', 'day', 'hour'];
+    for(let i=0; i<pillars.length; i++) {
+        for(let j=i+1; j<pillars.length; j++) {
+            let p1 = pillars[i]; let p2 = pillars[j];
+            let zhi1 = currentBaZiData[p1].zhi; let zhi2 = currentBaZiData[p2].zhi;
+            
+            if(interactions.earthlyClashes[zhi1] === zhi2) internalClashes.push(`💥 <b>ชง (ปะทะ):</b> เสา${pillarNamesTh[p1]} ชง เสา${pillarNamesTh[p2]} (มักมีการเปลี่ยนแปลง แตกหัก หรือชีพจรลงเท้า)`);
+            if(interactions.earthlyCombos[zhi1] === zhi2) internalClashes.push(`🤝 <b>ฮะ (ผูกพัน):</b> เสา${pillarNamesTh[p1]} ฮะ เสา${pillarNamesTh[p2]} (มีความรักใคร่ ผูกพัน และช่วยเหลือกันเหนียวแน่น)`);
+            if(interactions.earthlyPunishments[zhi1] && interactions.earthlyPunishments[zhi1].includes(zhi2)) internalClashes.push(`⚠️ <b>เฮ้ง (เบียดเบียน):</b> เสา${pillarNamesTh[p1]} เฮ้ง เสา${pillarNamesTh[p2]} (มักเกิดความอึดอัดใจ วุ่นวาย หรือกดดัน)`);
+            if(interactions.earthlyHarms[zhi1] === zhi2) internalClashes.push(`⚡ <b>ไห่ (ให้ร้าย):</b> เสา${pillarNamesTh[p1]} ไห่ เสา${pillarNamesTh[p2]} (ระวังการถูกเอาเปรียบ หรือปัญหาสุขภาพ)`);
+            if(interactions.earthlyDestructions[zhi1] === zhi2) internalClashes.push(`🔨 <b>ผั่ว (แตกหัก):</b> เสา${pillarNamesTh[p1]} ผั่ว เสา${pillarNamesTh[p2]} (สิ่งที่สร้างไว้มักมีเหตุให้ต้องสร้างใหม่)`);
+        }
+    }
+
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">⚡ ปฏิสัมพันธ์ในพื้นดวงกำเนิด (ชง ฮะ เฮ้ง)</h3>
+                <p style="font-size:13px; color:#666;">โชคชะตาที่ถูกสลักไว้ตั้งแต่เกิด (ความขัดแย้ง/ผูกพันในตัวเอง):</p>`;
+    if (internalClashes.length > 0) {
+        internalClashes.forEach(clash => { html += `<div class="encyc-item">${clash}</div>`; });
+    } else {
+        html += `<p>พื้นดวงสงบนิ่ง ไม่มีปฏิกิริยาปะทะหรือผูกพันที่รุนแรง</p>`;
+    }
+    html += `</div></div>`;
 
     document.getElementById('encyclopedia-detail').innerHTML = html;
     document.getElementById('encyclopedia-modal').style.display = "flex";
+    
+    // ตั้งค่าหน้าแรกให้เป็น Tab 1 เสมอ
+    openEncycTab(null, 'tab-basic');
+    document.querySelector('.tab-link').classList.add('active');
 }
 function closeEncyclopedia() { document.getElementById('encyclopedia-modal').style.display = "none"; }
 
+// 🌟 ฟังก์ชันใหม่: เปิดพจนานุกรมปาจื้อ 🌟
+function openGlossary() {
+    let html = `<div class="encyc-section"><h3 class="encyc-title">☯️ สิบเทพ (10 Gods)</h3>`;
+    for(let key in shiShenDesc) { html += `<div class="encyc-item"><b>${key}:</b><br>${shiShenDesc[key].replace(/\n/g, '<br>')}</div>`; }
+    html += `</div>`;
+
+    html += `<div class="encyc-section"><h3 class="encyc-title">⏳ 12 วัฏจักร (12 Growth Phases)</h3>`;
+    for(let key in diShiDesc) { html += `<div class="encyc-item"><b>${diShiDesc[key].th} (${key}):</b> ${diShiDesc[key].desc}</div>`; }
+    html += `</div>`;
+
+    html += `<div class="encyc-section"><h3 class="encyc-title">⚡ ปฏิสัมพันธ์ (Interactions)</h3>
+                <div class="encyc-item"><b>ฮะ (ภาคี):</b> รวมตัว, ผูกพัน, ราบรื่น, ได้รับความช่วยเหลือ</div>
+                <div class="encyc-item"><b>ชง (ปะทะ):</b> ขัดแย้ง, เปลี่ยนแปลงกะทันหัน, อุบัติเหตุ, เคลื่อนที่</div>
+                <div class="encyc-item"><b>เฮ้ง (เบียดเบียน):</b> อึดอัดใจ, วุ่นวาย, กดดัน, คดีความ</div>
+                <div class="encyc-item"><b>ไห่ (ให้ร้าย):</b> ถูกแทงข้างหลัง, นินทา, ปัญหาสุขภาพซ่อนเร้น</div>
+                <div class="encyc-item"><b>ผั่ว (แตกหัก):</b> เสียหาย, พังทลาย, ต้องเริ่มต้นใหม่</div>
+             </div>`;
+
+    document.getElementById('glossary-detail').innerHTML = html;
+    document.getElementById('glossary-modal').style.display = "flex";
+}
+function closeGlossary() { document.getElementById('glossary-modal').style.display = "none"; }
+
+// AI Functions (คงเดิม)
 function getDailyHoroscope() {
     const btn = document.getElementById('ai-daily-btn');
     const resultBox = document.getElementById('ai-result-box');
@@ -729,7 +813,6 @@ function getDailyHoroscope() {
 
 function openSynastryModal() { document.getElementById('synastry-modal').style.display = "flex"; }
 function closeSynastryModal() { document.getElementById('synastry-modal').style.display = "none"; }
-
 function calculateSynastry() {
     const pDate = document.getElementById('partner_birth_date').value; const pTime = document.getElementById('partner_birth_time').value;
     if(!pDate || !pTime) return alert("กรุณากรอกวันและเวลาเกิดของคู่ให้ครบถ้วนครับ");

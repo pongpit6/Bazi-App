@@ -1,7 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby-Jf7A-TSbwrvvJWxBdn4a8bDjPIw-MLzNN5Bp6NxVfImFstN7yf3kB75lLgO9jX_n/exec";
 let currentBaZiData = {};
 
-// 1. ฐานข้อมูลพื้นฐาน
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳' }, '乙': { type: 'wood', icon: '🌿' },
     '丙': { type: 'fire', icon: '☀️' }, '丁': { type: 'fire', icon: '🕯️' },
@@ -113,20 +112,19 @@ function calculateBaZi() {
 
     document.getElementById('bazi-result').style.display = "flex";
     document.getElementById('luck-sections').style.display = "block";
+    document.getElementById('ai-btn').style.display = "block";
     document.getElementById('save-btn').style.display = "block";
 }
 
 function renderLuck(solar, genderNum) {
     const bazi = solar.getLunar().getEightChar();
     
-    // วัยจร (Da Yun) แก้ไขคำสั่งให้ถูกต้องตามโครงสร้าง Library
     const yun = bazi.getYun(genderNum);
     const daYunList = yun.getDaYun();
     const daYunContainer = document.getElementById('da-yun-list');
     daYunContainer.innerHTML = '';
 
     daYunList.forEach(dy => {
-        // ดึงค่าราศีบนและล่างจากวัยจร
         const ganZhi = dy.getGanZhi();
         const gan = ganZhi.charAt(0);
         const zhi = ganZhi.charAt(1);
@@ -144,7 +142,6 @@ function renderLuck(solar, genderNum) {
         daYunContainer.appendChild(pillarDiv);
     });
 
-    // ปีจร (10 ปีข้างหน้า)
     const currentYear = new Date().getFullYear();
     const liuNianContainer = document.getElementById('liu-nian-list');
     liuNianContainer.innerHTML = '';
@@ -245,6 +242,50 @@ function showPopup(titleName, elementId) {
 
 function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
 
+function analyzeWithAI() {
+    const btn = document.getElementById('ai-btn');
+    const resultBox = document.getElementById('ai-result-box');
+    const aiContent = document.getElementById('ai-content');
+
+    btn.innerText = "✨ ซินแส Gemini กำลังผูกดวงและประมวลผล... (อาจใช้เวลา 10-20 วินาที)";
+    btn.disabled = true;
+    resultBox.style.display = "block";
+    aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
+
+    const payload = {
+        action: "analyze",
+        personal_info: {
+            name: document.getElementById('name').value || "ไม่ระบุ",
+            gender: document.getElementById('gender').value,
+            birth_date: document.getElementById('birth_date').value,
+            birth_time: document.getElementById('birth_time').value
+        },
+        bazi_results: currentBaZiData
+    };
+
+    fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result === "success") {
+            aiContent.innerHTML = data.analysis;
+            btn.innerText = "✨ วิเคราะห์เสร็จสิ้น (คลิกเพื่อวิเคราะห์ใหม่)";
+        } else {
+            aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
+            btn.innerText = "ลองใหม่อีกครั้ง";
+        }
+        btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อกับซินแสได้ในขณะนี้ กรุณาลองใหม่ครับ</p>`;
+        btn.innerText = "✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก";
+        btn.disabled = false;
+    });
+}
+
 function saveToGoogleSheets() {
     const payload = {
         name: document.getElementById('name').value || "ไม่ระบุชื่อ",
@@ -252,7 +293,7 @@ function saveToGoogleSheets() {
         birth_date: document.getElementById('birth_date').value,
         birth_time: document.getElementById('birth_time').value,
         bazi_results: currentBaZiData,
-        note: "ข้อมูลสมบูรณ์พร้อมวัยจรและปีจร"
+        note: "ข้อมูลสมบูรณ์"
     };
     const btn = document.getElementById('save-btn');
     btn.innerText = "กำลังบันทึก..."; btn.disabled = true;

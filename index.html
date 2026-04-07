@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>BaZi Personal App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>ระบบคำนวณปาจื้อ (BaZi)</h1>
+        
+        <div class="form-section">
+            <input type="text" id="name" placeholder="ชื่อ-นามสกุล">
+            <select id="gender">
+                <option value="ชาย">ชาย (乾)</option>
+                <option value="หญิง">หญิง (坤)</option>
+            </select>
+            <input type="date" id="birth_date">
+            <input type="time" id="birth_time">
+            <button onclick="calculateBaZi()">คำนวณผูกดวง</button>
+        </div>
+
+        <div id="bazi-result" class="bazi-grid" style="display: none;">
+            <div class="pillar" id="hour-pillar">
+                <h3>ยาม (Hour)</h3>
+                <div class="box" id="hour-heaven" onclick="showPopup('ราศีบน ยาม', 'hour-heaven')">-</div>
+                <div class="box" id="hour-earth" onclick="showPopup('ราศีล่าง ยาม', 'hour-earth')">-</div>
+            </div>
+            <div class="pillar" id="day-pillar">
+                <h3>วัน (Day)</h3>
+                <div class="box day-master" id="day-heaven" onclick="showPopup('ราศีบน วัน (ดิถี)', 'day-heaven')">-</div>
+                <div class="box" id="day-earth" onclick="showPopup('ราศีล่าง วัน', 'day-earth')">-</div>
+            </div>
+            <div class="pillar" id="month-pillar">
+                <h3>เดือน (Month)</h3>
+                <div class="box" id="month-heaven" onclick="showPopup('ราศีบน เดือน', 'month-heaven')">-</div>
+                <div class="box" id="month-earth" onclick="showPopup('ราศีล่าง เดือน', 'month-earth')">-</div>
+            </div>
+            <div class="pillar" id="year-pillar">
+                <h3>ปี (Year)</h3>
+                <div class="box" id="year-heaven" onclick="showPopup('ราศีบน ปี', 'year-heaven')">-</div>
+                <div class="box" id="year-earth" onclick="showPopup('ราศีล่าง ปี', 'year-earth')">-</div>
+            </div>
+        </div>
+
+        <div id="luck-sections" style="display: none;">
+            <h2 class="section-title">วัยจร 10 ปี (Da Yun)</h2>
+            <div id="da-yun-list" class="luck-grid"></div>
+
+            <h2 class="section-title">ปีจร (Liu Nian)</h2>
+            <div id="liu-nian-list" class="luck-grid"></div>
+        </div>
+
+        <button id="save-btn" class="save-btn" style="display: none;" onclick="saveToGoogleSheets()">บันทึกดวงนี้ลงฐานข้อมูล</button>
+
+        <div id="popup-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <h2 id="popup-title">รายละเอียด</h2>
+                <div id="popup-detail" style="max-height: 70vh; overflow-y: auto;">กำลังประมวลผล...</div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

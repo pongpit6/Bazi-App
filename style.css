@@ -38,28 +38,43 @@ button:hover { background-color: #b71c1c; }
 .luck-pillar .box { width: 75px; min-height: 90px; margin-bottom: 5px; cursor: default; }
 .luck-pillar .box:hover { transform: none; box-shadow: none; }
 
-.luck-shishen { font-size: 13px; font-weight: bold; color: #d32f2f; margin-bottom: 6px; padding: 3px 8px; background-color: #ffebee; border-radius: 6px; border: 1px solid #ffcdd2; display: inline-block;}
+.luck-shishen { font-size: 13px; font-weight: bold; color: #d32f2f; margin-bottom: 6px; padding: 3px 8px; background-color: #ffebee; border-radius: 6px; border: 1px solid #ffcdd2; display: inline-block; position: relative;}
 .time-warp-btn { margin-top: 5px; font-size: 11px; padding: 4px 8px; background: #3f51b5; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;}
 .time-warp-btn:hover { background: #303f9f; }
 
-/* 🌟 Tooltip CSS (ระบบแสดงคำอธิบายเมื่อเอาเมาส์ชี้) 🌟 */
-.tooltip-container { position: relative; cursor: help; }
+/* 🌟 Tooltip CSS แบบแข็งแรง ไม่ทะลักเฟรม 🌟 */
+.tooltip-container { position: relative; cursor: help; display: inline-block; }
 .tooltip-text {
-    visibility: hidden; width: max-content; max-width: 220px; background-color: #333; color: #fff;
-    text-align: center; border-radius: 6px; padding: 8px 12px; position: absolute;
-    z-index: 100; bottom: 130%; left: 50%; transform: translateX(-50%);
-    opacity: 0; transition: opacity 0.2s; font-size: 12px; font-weight: normal; line-height: 1.4;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none; white-space: pre-wrap;
+    visibility: hidden; 
+    width: 200px; 
+    background-color: rgba(40, 40, 40, 0.95); 
+    color: #fff;
+    text-align: center; 
+    border-radius: 6px; 
+    padding: 8px 12px; 
+    position: absolute;
+    z-index: 9999; 
+    bottom: 125%; 
+    left: 50%; 
+    transform: translateX(-50%);
+    opacity: 0; 
+    transition: opacity 0.3s; 
+    font-size: 12.5px; 
+    font-weight: normal; 
+    line-height: 1.5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+    pointer-events: none; 
+    white-space: pre-wrap;
 }
 .tooltip-text::after {
     content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
-    border-width: 5px; border-style: solid; border-color: #333 transparent transparent transparent;
+    border-width: 5px; border-style: solid; border-color: rgba(40, 40, 40, 0.95) transparent transparent transparent;
 }
 .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
 
-/* 🌟 Star Badges (ระบบโชว์ดาวบนหน้าจอ) 🌟 */
+/* 🌟 Star Badges (โชว์ดาวพิเศษบนหน้าจอ) 🌟 */
 .star-badges-container { display: flex; gap: 3px; justify-content: center; margin-top: 5px; }
-.star-badge { font-size: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.8); border-radius: 50%; width: 18px; height: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.star-badge { font-size: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9); border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 1px solid #eee; }
 
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }

@@ -1,8 +1,8 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby-Jf7A-TSbwrvvJWxBdn4a8bDjPIw-MLzNN5Bp6NxVfImFstN7yf3kB75lLgO9jX_n/exec";
 let currentBaZiData = {};
-let currentTimeData = {}; // 🌟 เก็บข้อมูลเวลาปัจจุบัน
-let activeDaYunData = {}; // 🌟 เก็บข้อมูลวัยจรปัจจุบัน
-let activeLiuNianData = {}; // 🌟 เก็บข้อมูลปีจรปัจจุบัน
+let currentTimeData = {}; 
+let activeDaYunData = {}; 
+let activeLiuNianData = {}; 
 let savedRecordsList = [];
 
 const elementMap = {
@@ -153,7 +153,6 @@ function calculateDMStrength() {
     dmBox.style.display = "block";
 }
 
-// Helper 🌟 ฟังก์ชันสร้างคำทำนาย 🌟
 function getAdviceText(type, context) {
     if (type === 'ฮะ') return `<div class="advice-box advice-good"><strong>คำแนะนำ (ฮะ - ภาคี):</strong> ช่วงเวลานี้จะมีความราบรื่น ได้รับความช่วยเหลือ เกิดความร่วมมือหรือพบเจอคนถูกใจในเรื่องที่เกี่ยวข้องกับ${context}</div>`;
     if (type === 'ชง') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ชง - ปะทะ):</strong> ระวังการเปลี่ยนแปลงกะทันหัน อุบัติเหตุ หรือความขัดแย้งรุนแรงในเรื่องที่เกี่ยวกับ${context} ควรมีสติและไม่ประมาท</div>`;
@@ -180,6 +179,26 @@ function getInteractionHTML(gan, zhi) {
     return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
 }
 
+// 🌟 ฟังก์ชันใหม่: แสดงผลเวลาปัจจุบันทันทีที่เปิดเว็บ 🌟
+function renderCurrentTimeBaZi() {
+    const now = new Date();
+    const currentSolar = Solar.fromDate(now);
+    const currentLunar = currentSolar.getLunar();
+    const currentBaZiObj = currentLunar.getEightChar();
+
+    currentTimeData = {
+        year: { gan: currentBaZiObj.getYearGan(), zhi: currentBaZiObj.getYearZhi() },
+        month: { gan: currentBaZiObj.getMonthGan(), zhi: currentBaZiObj.getMonthZhi() },
+        day: { gan: currentBaZiObj.getDayGan(), zhi: currentBaZiObj.getDayZhi() },
+        hour: { gan: currentBaZiObj.getTimeGan(), zhi: currentBaZiObj.getTimeZhi() }
+    };
+
+    ['year', 'month', 'day', 'hour'].forEach(p => {
+        renderBox(`curr-${p}-heaven`, currentTimeData[p].gan);
+        renderBox(`curr-${p}-earth`, currentTimeData[p].zhi);
+    });
+}
+
 function calculateBaZi() {
     const dateInput = document.getElementById('birth_date').value;
     const timeInput = document.getElementById('birth_time').value;
@@ -187,7 +206,9 @@ function calculateBaZi() {
     
     if (!dateInput || !timeInput) return alert("กรุณากรอกวันที่และเวลาเกิดให้ครบถ้วนครับ");
 
-    // 1. ผูกดวงชะตากำเนิด (Natal)
+    // อัปเดตเวลาปัจจุบันอีกรอบเผื่อข้ามวัน
+    renderCurrentTimeBaZi();
+
     const [y, m, d] = dateInput.split('-'); const [h, min] = timeInput.split(':');
     const solar = Solar.fromYmdHms(parseInt(y), parseInt(m), parseInt(d), parseInt(h), parseInt(min), 0);
     const lunar = solar.getLunar();
@@ -206,26 +227,7 @@ function calculateBaZi() {
         renderBox(`${p}-earth`, currentBaZiData[p].zhi);
     });
 
-    // 2. ผูกดวงเวลาปัจจุบัน (Current)
-    const now = new Date();
-    const currentSolar = Solar.fromDate(now);
-    const currentLunar = currentSolar.getLunar();
-    const currentBaZiObj = currentLunar.getEightChar();
-
-    currentTimeData = {
-        year: { gan: currentBaZiObj.getYearGan(), zhi: currentBaZiObj.getYearZhi() },
-        month: { gan: currentBaZiObj.getMonthGan(), zhi: currentBaZiObj.getMonthZhi() },
-        day: { gan: currentBaZiObj.getDayGan(), zhi: currentBaZiObj.getDayZhi() },
-        hour: { gan: currentBaZiObj.getTimeGan(), zhi: currentBaZiObj.getTimeZhi() }
-    };
-
-    ['year', 'month', 'day', 'hour'].forEach(p => {
-        renderBox(`curr-${p}-heaven`, currentTimeData[p].gan);
-        renderBox(`curr-${p}-earth`, currentTimeData[p].zhi);
-    });
-
-    // 3. หาวิธีจร (Da Yun) และปีจร (Liu Nian) ของปัจจุบัน
-    const currentYear = now.getFullYear();
+    const currentYear = new Date().getFullYear();
     const currentAge = currentYear - parseInt(y);
     const yun = bazi.getYun(genderInput === 'ชาย' ? 1 : 0);
     const daYunList = yun.getDaYun();
@@ -240,7 +242,6 @@ function calculateBaZi() {
     calculateDMStrength(); 
     renderLuck(solar, genderInput === 'ชาย' ? 1 : 0);
 
-    document.getElementById('current-bazi-section').style.display = "block";
     document.getElementById('natal-bazi-section').style.display = "block";
     document.getElementById('luck-sections').style.display = "block";
     document.getElementById('ai-btn').style.display = "block";
@@ -272,16 +273,14 @@ function renderLuck(solar, genderNum) {
     }
 }
 
-// 🌟 อัปเกรดฟังก์ชัน Pop-up แยกบริบท (กำเนิด vs ปัจจุบัน) 🌟
 function showPopup(titleName, elementId, type) {
     const [pillar, level] = elementId.split('-');
-    // เลือกชุดข้อมูลตาม Type
     const sourceData = type === 'natal' ? currentBaZiData : currentTimeData;
     const pillarData = sourceData[pillar];
     const contextMap = { 'year': 'ผู้ใหญ่/บรรพบุรุษ/ภาพลักษณ์', 'month': 'พ่อแม่/พี่น้อง/การงาน', 'day': 'คู่ครอง/เรื่องส่วนตัว', 'hour': 'บุตรบริวาร/บั้นปลายชีวิต/การลงทุน' };
     const myContext = contextMap[pillar];
     
-    let htmlContent = `<h3>ตำแหน่ง: เสา${pillarNamesTh[pillar]} (${myContext})</h3><hr style="margin: 10px 0; border: 0.5px solid #eee;">`;
+    let htmlContent = `<h3>ตำแหน่ง: เสา${pillarNamesTh[pillar]} ${type === 'natal' ? `(${myContext})` : '(ปัจจุบัน)'}</h3><hr style="margin: 10px 0; border: 0.5px solid #eee;">`;
     let relationHtml = ''; let specialStarsHtml = '';
     const pillarsToCheck = ['year', 'month', 'day', 'hour'];
 
@@ -293,7 +292,6 @@ function showPopup(titleName, elementId, type) {
             const shiShen = pillar === 'day' ? 'ดิถี (ธาตุประจำตัว)' : shiShenMap[pillarData.ganShiShen] || pillarData.ganShiShen;
             htmlContent += `<p><strong>สิบเทพ:</strong> <span style="color:#d32f2f; font-weight:bold;">${shiShen}</span></p>`;
             
-            // 🌟 เช็กปะทะกับพื้นดวงกันเอง 🌟
             pillarsToCheck.forEach(p => {
                 if (p !== pillar) {
                     const otherChar = currentBaZiData[p].gan;
@@ -302,19 +300,22 @@ function showPopup(titleName, elementId, type) {
                 }
             });
             
-            // 🌟 เช็กปะทะกับ "วัยจรปัจจุบัน" และ "ปีจรปัจจุบัน" 🌟
-            if (interactions.heavenlyCombos[char] === activeDaYunData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน (อายุ ${activeDaYunData.startAge}) เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
-            if (interactions.heavenlyClashes[char] === activeDaYunData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน (อายุ ${activeDaYunData.startAge}) เข้ามาชง</p>` + getAdviceText('ชง', myContext);
-            if (interactions.heavenlyCombos[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
-            if (interactions.heavenlyClashes[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาชง</p>` + getAdviceText('ชง', myContext);
+            if (interactions.heavenlyCombos[char] === activeDaYunData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
+            if (interactions.heavenlyClashes[char] === activeDaYunData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', myContext);
+            if (interactions.heavenlyCombos[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
+            if (interactions.heavenlyClashes[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', myContext);
         } else {
-            // 🌟 ถ้ากดที่เวลาปัจจุบัน ให้เช็กว่าเวลานี้ส่งผลอะไรกับพื้นดวงบ้าง 🌟
-            htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
-            pillarsToCheck.forEach(p => {
-                const otherChar = currentBaZiData[p].gan;
-                if (interactions.heavenlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิดของคุณ</p>` + getAdviceText('ฮะ', contextMap[p]);
-                if (interactions.heavenlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิดของคุณ</p>` + getAdviceText('ชง', contextMap[p]);
-            });
+            // 🌟 บริบท: ผู้ใช้คลิกดูเวลาปัจจุบัน 🌟
+            if (Object.keys(currentBaZiData).length > 0) {
+                htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
+                pillarsToCheck.forEach(p => {
+                    const otherChar = currentBaZiData[p].gan;
+                    if (interactions.heavenlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', contextMap[p]);
+                    if (interactions.heavenlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', contextMap[p]);
+                });
+            } else {
+                htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">กรุณาคำนวณผูกดวงก่อน เพื่อดูว่าเวลานี้ส่งผลกระทบอย่างไรกับดวงชะตาของคุณครับ</p></div>`;
+            }
         }
     } else {
         const char = pillarData.zhi;
@@ -324,7 +325,6 @@ function showPopup(titleName, elementId, type) {
             const shiShenArray = pillarData.zhiShiShen.map(ss => shiShenMap[ss] || ss).join(', ');
             htmlContent += `<p><strong>ราศีแฝง:</strong> <span style="color:#d32f2f; font-weight:bold;">${shiShenArray}</span></p>`;
 
-            // 🌟 เช็กปะทะกับพื้นดวงกันเอง 🌟
             pillarsToCheck.forEach(p => {
                 if (p !== pillar) {
                     const otherChar = currentBaZiData[p].zhi;
@@ -336,7 +336,6 @@ function showPopup(titleName, elementId, type) {
                 }
             });
 
-            // 🌟 เช็กปะทะกับ "วัยจรปัจจุบัน" และ "ปีจรปัจจุบัน" แบบละเอียดยิบ 🌟
             let dyZhi = activeDaYunData.zhi;
             if (interactions.earthlyCombos[char] === dyZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
             if (interactions.earthlyClashes[char] === dyZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', myContext);
@@ -344,31 +343,39 @@ function showPopup(titleName, elementId, type) {
             if (interactions.earthlyHarms[char] === dyZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาไห่</p>` + getAdviceText('ไห่', myContext);
             
             let lnZhi = activeLiuNianData.zhi;
-            if (interactions.earthlyCombos[char] === lnZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
-            if (interactions.earthlyClashes[char] === lnZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาชง</p>` + getAdviceText('ชง', myContext);
-            if (interactions.earthlyPunishments[char] && interactions.earthlyPunishments[char].includes(lnZhi)) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาเฮ้ง</p>` + getAdviceText('เฮ้ง', myContext);
-            if (interactions.earthlyHarms[char] === lnZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน (${activeLiuNianData.year}) เข้ามาไห่</p>` + getAdviceText('ไห่', myContext);
+            if (interactions.earthlyCombos[char] === lnZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
+            if (interactions.earthlyClashes[char] === lnZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', myContext);
+            if (interactions.earthlyPunishments[char] && interactions.earthlyPunishments[char].includes(lnZhi)) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาเฮ้ง</p>` + getAdviceText('เฮ้ง', myContext);
+            if (interactions.earthlyHarms[char] === lnZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาไห่</p>` + getAdviceText('ไห่', myContext);
 
             const foundStars = checkSpecialStars(char, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
             if (foundStars.length > 0) {
                 foundStars.forEach(star => { specialStarsHtml += `<li style="margin-bottom: 5px;"><strong>${star.name}</strong><br><span style="font-size: 0.85em; color: #555;">${star.desc}</span></li>`; });
             }
         } else {
-            // 🌟 ถ้ากดที่เวลาปัจจุบัน ให้เช็กว่าราศีล่างเวลานี้ส่งผลอะไรกับดวงกำเนิดบ้าง 🌟
-            htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
-            pillarsToCheck.forEach(p => {
-                const otherChar = currentBaZiData[p].zhi;
-                if (interactions.earthlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', contextMap[p]);
-                if (interactions.earthlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', contextMap[p]);
-                if (interactions.earthlyPunishments[char] && interactions.earthlyPunishments[char].includes(otherChar)) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>เฮ้ง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('เฮ้ง', contextMap[p]);
-                if (interactions.earthlyHarms[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ไห่</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ไห่', contextMap[p]);
-                if (interactions.earthlyDestructions[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ผั่ว</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ผั่ว', contextMap[p]);
-            });
+            // 🌟 บริบท: ผู้ใช้คลิกดูเวลาปัจจุบัน 🌟
+            if (Object.keys(currentBaZiData).length > 0) {
+                htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
+                pillarsToCheck.forEach(p => {
+                    const otherChar = currentBaZiData[p].zhi;
+                    if (interactions.earthlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', contextMap[p]);
+                    if (interactions.earthlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', contextMap[p]);
+                    if (interactions.earthlyPunishments[char] && interactions.earthlyPunishments[char].includes(otherChar)) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>เฮ้ง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('เฮ้ง', contextMap[p]);
+                    if (interactions.earthlyHarms[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ไห่</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ไห่', contextMap[p]);
+                    if (interactions.earthlyDestructions[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ผั่ว</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ผั่ว', contextMap[p]);
+                });
+            } else {
+                htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">กรุณาคำนวณผูกดวงก่อน เพื่อดูว่าเวลานี้ส่งผลกระทบอย่างไรกับดวงชะตาของคุณครับ</p></div>`;
+            }
         }
     }
 
-    if (relationHtml !== '') htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #ffb300; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔍 ปฏิสัมพันธ์ (Interactions):</p>${relationHtml}</div>`;
-    else if (type === 'current') htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะหรือส่งผลพิเศษกับเสาใดในพื้นดวงครับ</p></div>`;
+    if (relationHtml !== '') {
+        htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #ffb300; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔍 ปฏิสัมพันธ์ (Interactions):</p>${relationHtml}</div>`;
+    } else if (type === 'current' && Object.keys(currentBaZiData).length > 0) {
+        // แจ้งเตือนเฉพาะกรณีที่ผูกดวงแล้ว แต่เวลาปัจจุบันไม่ได้ชงฮะอะไร
+        htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะหรือส่งผลพิเศษกับเสาใดในดวงชะตากำเนิดครับ</p></div>`;
+    }
 
     if (specialStarsHtml !== '') htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔮 ดาวพิเศษ (Shen Sha):</p><ul style="padding-left: 20px; margin: 0;">${specialStarsHtml}</ul></div>`;
 
@@ -454,4 +461,8 @@ function loadSavedData() {
     calculateBaZi();
 }
 
-window.onload = function() { fetchSavedData(); };
+// 🌟 สั่งให้โหลดข้อมูลเก่าและดึงเวลาปัจจุบันมาโชว์ทันทีที่เปิดเว็บ 🌟
+window.onload = function() { 
+    fetchSavedData(); 
+    renderCurrentTimeBaZi();
+};

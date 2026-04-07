@@ -32,7 +32,6 @@ const shiShenMap = {
     '偏印': 'เพียงอิ่ง (อุปถัมภ์รอง)', '正印': 'เจี้ยอิ่ง (อุปถัมภ์หลัก)'
 };
 
-// 🌟 ตารางคำนวณสิบเทพ (10 Gods Mapping) [แถว = ดิถี (วัน), คอลัมน์ = ราศีบนเป้าหมาย] 🌟
 const tenGodsMap = {
     '甲': {'甲':'比肩', '乙':'劫财', '丙':'食神', '丁':'伤官', '戊':'偏财', '己':'正财', '庚':'七杀', '辛':'正官', '壬':'偏印', '癸':'正印'},
     '乙': {'甲':'劫财', '乙':'比肩', '丙':'伤官', '丁':'食神', '戊':'正财', '己':'偏财', '庚':'正官', '辛':'七杀', '壬':'正印', '癸':'偏印'},
@@ -262,9 +261,11 @@ function calculateBaZi() {
     calculateDMStrength(); 
     renderLuck(solar, genderInput === 'ชาย' ? 1 : 0);
 
-    // รีเซ็ตปุ่ม AI เมื่อกดผูกดวงใหม่
+    // 🌟 แสดงปุ่มต่างๆ เพิ่มเติมเมื่อคำนวณเสร็จ 🌟
     document.getElementById('ai-btn').innerText = "✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก";
     document.getElementById('ai-result-box').style.display = "none";
+    document.getElementById('custom-question-box').style.display = "block"; // โชว์ช่องถามคำถาม
+    document.getElementById('download-btn').style.display = "block"; // โชว์ปุ่มดาวน์โหลดรูป
 
     document.getElementById('natal-bazi-section').style.display = "block";
     document.getElementById('luck-sections').style.display = "block";
@@ -272,12 +273,11 @@ function calculateBaZi() {
     document.getElementById('save-btn').style.display = "block";
 }
 
-// 🌟 อัปเกรดฟังก์ชัน Render Luck เพื่อแสดงสิบเทพ 🌟
 function renderLuck(solar, genderNum) {
     const bazi = solar.getLunar().getEightChar();
     const yun = bazi.getYun(genderNum);
     const daYunList = yun.getDaYun();
-    const dayGan = currentBaZiData.day.gan; // ดึงราศีบนของวันเกิด (ดิถี)
+    const dayGan = currentBaZiData.day.gan; 
     
     const daYunContainer = document.getElementById('da-yun-list');
     daYunContainer.innerHTML = '';
@@ -285,7 +285,6 @@ function renderLuck(solar, genderNum) {
         const gan = dy.getGanZhi().charAt(0); const zhi = dy.getGanZhi().charAt(1);
         const interactionHtml = getInteractionHTML(gan, zhi); 
         
-        // คำนวณสิบเทพเทียบกับดิถี
         let tenGodCh = tenGodsMap[dayGan][gan];
         let tenGodTh = shiShenMap[tenGodCh] ? shiShenMap[tenGodCh].split(' ')[0] : tenGodCh;
 
@@ -309,7 +308,6 @@ function renderLuck(solar, genderNum) {
         const yGan = lYear.getYearGan(); const yZhi = lYear.getYearZhi();
         const interactionHtml = getInteractionHTML(yGan, yZhi); 
         
-        // คำนวณสิบเทพเทียบกับดิถี
         let tenGodCh = tenGodsMap[dayGan][yGan];
         let tenGodTh = shiShenMap[tenGodCh] ? shiShenMap[tenGodCh].split(' ')[0] : tenGodCh;
 
@@ -435,21 +433,24 @@ function showPopup(titleName, elementId, type) {
 
 function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
 
-// 🌟 อัปเกรดฟังก์ชัน AI ด้วยระบบ LocalStorage Cache 🌟
+// 🌟 อัปเกรด AI: ดึงคำถามพิเศษจากหน้าจอ และฝังลง Cache 🌟
 function analyzeWithAI(forceRefresh = false) {
     const name = document.getElementById('name').value || "ไม่ระบุ";
     const gender = document.getElementById('gender').value;
     const bDate = document.getElementById('birth_date').value;
     const bTime = document.getElementById('birth_time').value;
     
-    // สร้างกุญแจ (Key) สำหรับจำค่าใน Cache
-    const cacheKey = `ai_cache_${name}_${bDate}_${bTime}`;
+    // ดึงคำถามเฉพาะเจาะจงที่ผู้ใช้พิมพ์
+    const customQuestion = document.getElementById('ai-custom-question').value.trim();
+    const safeQ = encodeURIComponent(customQuestion);
+    
+    // สร้างกุญแจ Cache (ถ้าคำถามเปลี่ยน จะถือว่าเป็นเรื่องใหม่และดึง AI ใหม่)
+    const cacheKey = `ai_cache_${name}_${bDate}_${bTime}_${safeQ}`;
 
     const btn = document.getElementById('ai-btn');
     const resultBox = document.getElementById('ai-result-box');
     const aiContent = document.getElementById('ai-content');
 
-    // ตรวจสอบ Cache ถ้าไม่อยากบังคับ Refresh และมีข้อมูลอยู่แล้ว ให้ดึงมาแสดงทันที
     if (!forceRefresh) {
         const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
@@ -465,22 +466,22 @@ function analyzeWithAI(forceRefresh = false) {
     resultBox.style.display = "block";
     aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
 
+    // 🌟 แพ็กคำถามพิเศษส่งไปพร้อมกับ Payload 🌟
     const payload = {
         action: "analyze",
         personal_info: { name: name, gender: gender, birth_date: bDate, birth_time: bTime },
         bazi_results: currentBaZiData,
         dm_strength: dmStrengthData,
         da_yun: activeDaYunData,
-        liu_nian: activeLiuNianData
+        liu_nian: activeLiuNianData,
+        custom_question: customQuestion 
     };
 
     fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
     .then(response => response.json())
     .then(data => {
         if (data.result === "success") {
-            // บันทึกคำทำนายที่ได้ลง LocalStorage
             localStorage.setItem(cacheKey, data.analysis);
-            
             aiContent.innerHTML = data.analysis + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่จาก AI (Refresh)</button></div>`;
             btn.innerText = "✨ วิเคราะห์เสร็จสิ้น (คลิกเพื่อวิเคราะห์ใหม่)";
         } else {
@@ -491,6 +492,41 @@ function analyzeWithAI(forceRefresh = false) {
     }).catch(error => {
         aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`;
         btn.innerText = "✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก";
+        btn.disabled = false;
+    });
+}
+
+// 🌟 ฟังก์ชันใหม่: ดาวน์โหลดรูปดวงชะตา (ใช้ html2canvas) 🌟
+function downloadBaziImage() {
+    const captureArea = document.getElementById('capture-area');
+    const btn = document.getElementById('download-btn');
+    const originalText = btn.innerText;
+    
+    btn.innerText = "⏳ กำลังประมวลผลรูปภาพ...";
+    btn.disabled = true;
+
+    // แบคอัพพื้นหลังเดิมไว้
+    const originalBg = captureArea.style.background;
+    captureArea.style.background = '#ffffff'; // บังคับให้พื้นหลังขาวสะอาดตอนแคป
+
+    html2canvas(captureArea, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+        // คืนค่าสีเดิม
+        captureArea.style.background = originalBg;
+        
+        // แปลงแคนวาสเป็นไฟล์ภาพแล้วสั่งดาวน์โหลด
+        const link = document.createElement('a');
+        const name = document.getElementById('name').value || "MyBaZi";
+        link.download = `ดวงชะตา_${name}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        console.error("Error capturing image: ", err);
+        alert("เกิดข้อผิดพลาดในการบันทึกรูปภาพครับ");
+        captureArea.style.background = originalBg;
+        btn.innerText = originalText;
         btn.disabled = false;
     });
 }

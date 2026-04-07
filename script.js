@@ -1,8 +1,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby-Jf7A-TSbwrvvJWxBdn4a8bDjPIw-MLzNN5Bp6NxVfImFstN7yf3kB75lLgO9jX_n/exec";
 let currentBaZiData = {};
-let savedRecordsList = [];
+let savedRecordsList = []; // ประกาศแค่รอบเดียวที่นี่ครับ
 
-// 1. เพิ่มชื่อภาษาไทย (thName) เข้าไปในฐานข้อมูล
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳', thName: 'ไม้หยาง' }, '乙': { type: 'wood', icon: '🌿', thName: 'ไม้หยิน' },
     '丙': { type: 'fire', icon: '☀️', thName: 'ไฟหยาง' }, '丁': { type: 'fire', icon: '🕯️', thName: 'ไฟหยิน' },
@@ -17,14 +16,13 @@ const elementMap = {
     '戌': { type: 'earth', icon: '🐕', thName: 'จอ (หมา)' }, '亥': { type: 'water', icon: '🐖', thName: 'กุน (หมู)' }
 };
 
-// 2. ฐานข้อมูลราศีแฝง (ตัวอักษรที่ซ่อนอยู่ในนักษัตร)
 const hiddenGanMap = {
     '子': ['癸'], '丑': ['己', '癸', '辛'], '寅': ['甲', '丙', '戊'], '卯': ['乙'],
     '辰': ['戊', '乙', '癸'], '巳': ['丙', '戊', '庚'], '午': ['丁', '己'], '未': ['己', '丁', '乙'],
     '申': ['庚', '壬', '戊'], '酉': ['辛'], '戌': ['戊', '辛', '丁'], '亥': ['壬', '甲']
 };
 
-const shiShenMap = { /* 10 เทพ คงเดิม */
+const shiShenMap = {
     '比肩': 'ผี่เจียง (เพื่อน)', '劫财': 'เกียบไช้ (แย่งชิง)', '食神': 'เจียะซิ้ง (ผลงาน)', '伤官': 'ซังกัว (แสดงออก)',
     '偏财': 'เพียงไช้ (ลาภลอย)', '正财': 'เจี้ยไช้ (โชคลาภ)', '七杀': 'ชิกสัวะ (อำนาจ)', '正官': 'เจี้ยกัว (ขุนนาง)',
     '偏印': 'เพียงอิ่ง (อุปถัมภ์รอง)', '正印': 'เจี้ยอิ่ง (อุปถัมภ์หลัก)'
@@ -56,14 +54,12 @@ function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
     return stars;
 }
 
-// 3. ฟังก์ชันอัจฉริยะที่ใช้สร้าง HTML ด้านในของกล่อง (รองรับชื่อไทยและจุดธาตุ)
 function getBoxInnerHtml(char) {
     const data = elementMap[char] || { type: '', icon: '', thName: '' };
     let html = `<span class="char">${char}</span>`;
     html += `<span class="icon">${data.icon}</span>`;
-    html += `<span style="font-size:11px; margin-top:2px;">${data.thName}</span>`; // ชื่อภาษาไทย
+    html += `<span style="font-size:11px; margin-top:2px;">${data.thName}</span>`; 
 
-    // ถ้านักษัตรนั้นมีราศีแฝง ให้วาดจุดสี
     if (hiddenGanMap[char]) {
         html += `<div style="display:flex; gap:4px; margin-top:4px;">`;
         hiddenGanMap[char].forEach(gan => {
@@ -86,7 +82,7 @@ function renderBox(elementId, chineseChar) {
     const box = document.getElementById(elementId);
     const data = elementMap[chineseChar] || { type: '' };
     box.classList.remove('wood', 'fire', 'earth', 'metal', 'water');
-    box.innerHTML = getBoxInnerHtml(chineseChar); // เรียกใช้ฟังก์ชันที่อัปเดตแล้ว
+    box.innerHTML = getBoxInnerHtml(chineseChar);
     if(data.type) box.classList.add(data.type);
 }
 
@@ -140,7 +136,6 @@ function renderLuck(solar, genderNum) {
         
         const pillarDiv = document.createElement('div');
         pillarDiv.className = 'luck-pillar';
-        // ใช้ getBoxInnerHtml เพื่อให้มีชื่อไทยและจุดธาตุแฝงโชว์ในวัยจรด้วย
         pillarDiv.innerHTML = `
             <div class="age-label">อายุ ${startAge}</div>
             <div class="box ${elementMap[gan] ? elementMap[gan].type : ''}">${getBoxInnerHtml(gan)}</div>
@@ -276,17 +271,20 @@ function saveToGoogleSheets() {
     const payload = {
         name: document.getElementById('name').value || "ไม่ระบุชื่อ", gender: document.getElementById('gender').value,
         birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value,
-        bazi_results: currentBaZiData, note: "มีระบบจุดธาตุแฝงแล้ว"
+        bazi_results: currentBaZiData, note: "ทดสอบบันทึกข้อมูล"
     };
     const btn = document.getElementById('save-btn');
     btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
     fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(() => { alert("บันทึกสำเร็จ!"); btn.innerText = "บันทึกดวงนี้ลงฐานข้อมูล"; btn.disabled = false; })
+    .then(() => { 
+        alert("บันทึกสำเร็จ!"); 
+        btn.innerText = "บันทึกดวงนี้ลงฐานข้อมูล"; 
+        btn.disabled = false; 
+        fetchSavedData(); // อัปเดต Dropdown ทันทีหลังเซฟเสร็จ
+    })
     .catch(() => { alert("เกิดข้อผิดพลาด"); btn.innerText = "บันทึกดวงนี้ลงฐานข้อมูล"; btn.disabled = false; });
 }
 
-// โค้ดดึงข้อมูล Dropdown
-let savedRecordsList = [];
 function fetchSavedData() {
     const select = document.getElementById('saved-profiles');
     fetch(API_URL).then(response => response.json()).then(data => {
@@ -309,4 +307,5 @@ function loadSavedData() {
     document.getElementById('birth_date').value = record.birth_date; document.getElementById('birth_time').value = record.birth_time;
     calculateBaZi();
 }
+
 window.onload = function() { fetchSavedData(); };

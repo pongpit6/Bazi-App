@@ -124,7 +124,6 @@ const elementMetaphors = {
     }
 };
 
-// 🌟 อัปเกรดความหมายของอิมเจีย (Na Yin) แต่ละธาตุ 🌟
 const naYinDesc = {
     'ทอง': 'ลึกๆ เด็ดขาด ตัดสินใจเฉียบขาด เย็นชาและมีกฎเกณฑ์ในใจ',
     'ไม้': 'ลึกๆ เป็นคนยึดมั่นในหลักการ มีเมตตา ชอบพัฒนาตัวเอง',
@@ -255,7 +254,6 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
     }
 }
 
-// 🌟 อัปเดตอิมเจีย ใน Tooltip ให้โชว์คำอธิบาย 🌟
 function updateShiShenLabels(dataObj, prefix, dayGan) {
     if(!dayGan) return;
     ['year', 'month', 'day', 'hour'].forEach(p => {
@@ -433,7 +431,6 @@ function getAdviceText(type, context) {
     return "";
 }
 
-// 🌟 อัปเดต อิมเจีย ใน Pop-up ให้โชว์คำอธิบายเฉพาะเจาะจง 🌟
 function showPopup(titleName, elementId, type) {
     const [pillar, level] = elementId.split('-');
     const sourceData = type === 'natal' ? currentBaZiData : currentTimeData;
@@ -734,13 +731,12 @@ function renderLuck(solar, genderNum) {
     }
 }
 
-// 🌟 ตัวช่วยสร้างป้าย Tooltip สวยๆ สำหรับพจนานุกรม 🌟
 function rChar(char) {
     const d = elementMap[char];
     if(!d) return char;
-    let th = d.thName.split(' ')[0]; // ดึงแค่คำหน้า เช่น "ชวด" แทน "ชวด (หนู)"
+    let th = d.thName.split(' ')[0]; 
     let typeName = d.type.replace('wood','ไม้').replace('fire','ไฟ').replace('earth','ดิน').replace('metal','ทอง').replace('water','น้ำ');
-    return `<span class="tooltip-container" style="color:#0277bd; font-weight:bold; cursor:help; border-bottom: 1px dashed #0277bd;">${d.icon} ${th} (${char})<span class="tooltip-text" style="width:150px;"><b>${d.thName}</b><br>ธาตุ: ${typeName}</span></span>`;
+    return `<span class="tooltip-container" style="color:#0277bd; font-weight:bold; cursor:help; border-bottom: 1px dashed #0277bd;">${d.icon} ${th} (${char})<span class="tooltip-text" style="width:150px; text-align:center;"><b>${d.thName}</b><br>ธาตุ: ${typeName}</span></span>`;
 }
 
 function openEncycTab(evt, tabName) {
@@ -875,7 +871,6 @@ function openGlosTab(evt, tabName) {
     if(evt) evt.currentTarget.className += " active";
 }
 
-// 🌟 อัปเกรดพจนานุกรมให้เป็น Interactive (มี Tooltips) 🌟
 function openGlossary() {
     let html = '';
 
@@ -1004,6 +999,14 @@ function openGlossary() {
     document.querySelector('.tab-link-glos').classList.add('active');
 }
 function closeGlossary() { document.getElementById('glossary-modal').style.display = "none"; }
+
+// 🌟 ฟังก์ชันเปิด-ปิด คู่มือสอนอ่านดวง (Tutorial) 🌟
+function openTutorial() {
+    document.getElementById('tutorial-modal').style.display = "flex";
+}
+function closeTutorial() {
+    document.getElementById('tutorial-modal').style.display = "none";
+}
 
 function getDailyHoroscope() {
     const btn = document.getElementById('ai-daily-btn'); 

@@ -116,3 +116,6 @@ button:hover { background-color: #b71c1c; }
 .glos-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13.5px; }
 .glos-table th, .glos-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 .glos-table th { background-color: #f1f8e9; color: #333; }
+
+.tutorial-step { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+.tutorial-step:last-child { border-bottom: none; }

@@ -6,6 +6,7 @@
     <title>BaZi Personal App</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -32,60 +33,63 @@
             <button onclick="calculateBaZi()">คำนวณผูกดวง</button>
         </div>
 
-        <div id="dm-strength-box" class="dm-strength-container" style="display:none;"></div>
+        <div id="capture-area" style="background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            
+            <div id="dm-strength-box" class="dm-strength-container" style="display:none;"></div>
 
-        <div id="current-bazi-section" style="display: block;">
-            <h2 class="section-title" style="color: #2e7d32; border-left-color: #2e7d32;">⏳ พลังงานกาลเวลาปัจจุบัน (Current Time)</h2>
-            <p style="text-align: center; color: #555; font-size: 14px; margin-top: -10px;">(คลิกที่ธาตุเพื่อดูว่าเวลานี้ส่งผลอย่างไรกับดวงของคุณ)</p>
-            <div class="bazi-grid current-time-grid">
-                <div class="pillar" id="curr-hour-pillar">
-                    <h3>ยาม (Hour)</h3>
-                    <div class="box" id="curr-hour-heaven" onclick="showPopup('ราศีบน ยามปัจจุบัน', 'hour-heaven', 'current')">-</div>
-                    <div class="box" id="curr-hour-earth" onclick="showPopup('ราศีล่าง ยามปัจจุบัน', 'hour-earth', 'current')">-</div>
-                </div>
-                <div class="pillar" id="curr-day-pillar">
-                    <h3>วัน (Day)</h3>
-                    <div class="box" id="curr-day-heaven" onclick="showPopup('ราศีบน วันปัจจุบัน', 'day-heaven', 'current')">-</div>
-                    <div class="box" id="curr-day-earth" onclick="showPopup('ราศีล่าง วันปัจจุบัน', 'day-earth', 'current')">-</div>
-                </div>
-                <div class="pillar" id="curr-month-pillar">
-                    <h3>เดือน (Month)</h3>
-                    <div class="box" id="curr-month-heaven" onclick="showPopup('ราศีบน เดือนปัจจุบัน', 'month-heaven', 'current')">-</div>
-                    <div class="box" id="curr-month-earth" onclick="showPopup('ราศีล่าง เดือนปัจจุบัน', 'month-earth', 'current')">-</div>
-                </div>
-                <div class="pillar" id="curr-year-pillar">
-                    <h3>ปี (Year)</h3>
-                    <div class="box" id="curr-year-heaven" onclick="showPopup('ราศีบน ปีปัจจุบัน', 'year-heaven', 'current')">-</div>
-                    <div class="box" id="curr-year-earth" onclick="showPopup('ราศีล่าง ปีปัจจุบัน', 'year-earth', 'current')">-</div>
+            <div id="current-bazi-section" style="display: block;">
+                <h2 class="section-title" style="color: #2e7d32; border-left-color: #2e7d32;">⏳ พลังงานกาลเวลาปัจจุบัน (Current Time)</h2>
+                <p style="text-align: center; color: #555; font-size: 14px; margin-top: -10px;">(คลิกที่ธาตุเพื่อดูว่าเวลานี้ส่งผลอย่างไรกับดวงของคุณ)</p>
+                <div class="bazi-grid current-time-grid">
+                    <div class="pillar" id="curr-hour-pillar">
+                        <h3>ยาม (Hour)</h3>
+                        <div class="box" id="curr-hour-heaven" onclick="showPopup('ราศีบน ยามปัจจุบัน', 'hour-heaven', 'current')">-</div>
+                        <div class="box" id="curr-hour-earth" onclick="showPopup('ราศีล่าง ยามปัจจุบัน', 'hour-earth', 'current')">-</div>
+                    </div>
+                    <div class="pillar" id="curr-day-pillar">
+                        <h3>วัน (Day)</h3>
+                        <div class="box" id="curr-day-heaven" onclick="showPopup('ราศีบน วันปัจจุบัน', 'day-heaven', 'current')">-</div>
+                        <div class="box" id="curr-day-earth" onclick="showPopup('ราศีล่าง วันปัจจุบัน', 'day-earth', 'current')">-</div>
+                    </div>
+                    <div class="pillar" id="curr-month-pillar">
+                        <h3>เดือน (Month)</h3>
+                        <div class="box" id="curr-month-heaven" onclick="showPopup('ราศีบน เดือนปัจจุบัน', 'month-heaven', 'current')">-</div>
+                        <div class="box" id="curr-month-earth" onclick="showPopup('ราศีล่าง เดือนปัจจุบัน', 'month-earth', 'current')">-</div>
+                    </div>
+                    <div class="pillar" id="curr-year-pillar">
+                        <h3>ปี (Year)</h3>
+                        <div class="box" id="curr-year-heaven" onclick="showPopup('ราศีบน ปีปัจจุบัน', 'year-heaven', 'current')">-</div>
+                        <div class="box" id="curr-year-earth" onclick="showPopup('ราศีล่าง ปีปัจจุบัน', 'year-earth', 'current')">-</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="natal-bazi-section" style="display: none;">
-            <h2 class="section-title">👶 ดวงชะตากำเนิด (Natal Chart)</h2>
-            <div id="bazi-result" class="bazi-grid">
-                <div class="pillar" id="hour-pillar">
-                    <h3>ยาม (Hour)</h3>
-                    <div class="box" id="hour-heaven" onclick="showPopup('ราศีบน ยาม', 'hour-heaven', 'natal')">-</div>
-                    <div class="box" id="hour-earth" onclick="showPopup('ราศีล่าง ยาม', 'hour-earth', 'natal')">-</div>
-                </div>
-                <div class="pillar" id="day-pillar">
-                    <h3>วัน (Day)</h3>
-                    <div class="box day-master" id="day-heaven" onclick="showPopup('ราศีบน วัน (ดิถี)', 'day-heaven', 'natal')">-</div>
-                    <div class="box" id="day-earth" onclick="showPopup('ราศีล่าง วัน', 'day-earth', 'natal')">-</div>
-                </div>
-                <div class="pillar" id="month-pillar">
-                    <h3>เดือน (Month)</h3>
-                    <div class="box" id="month-heaven" onclick="showPopup('ราศีบน เดือน', 'month-heaven', 'natal')">-</div>
-                    <div class="box" id="month-earth" onclick="showPopup('ราศีล่าง เดือน', 'month-earth', 'natal')">-</div>
-                </div>
-                <div class="pillar" id="year-pillar">
-                    <h3>ปี (Year)</h3>
-                    <div class="box" id="year-heaven" onclick="showPopup('ราศีบน ปี', 'year-heaven', 'natal')">-</div>
-                    <div class="box" id="year-earth" onclick="showPopup('ราศีล่าง ปี', 'year-earth', 'natal')">-</div>
+            <div id="natal-bazi-section" style="display: none;">
+                <h2 class="section-title">👶 ดวงชะตากำเนิด (Natal Chart)</h2>
+                <div id="bazi-result" class="bazi-grid">
+                    <div class="pillar" id="hour-pillar">
+                        <h3>ยาม (Hour)</h3>
+                        <div class="box" id="hour-heaven" onclick="showPopup('ราศีบน ยาม', 'hour-heaven', 'natal')">-</div>
+                        <div class="box" id="hour-earth" onclick="showPopup('ราศีล่าง ยาม', 'hour-earth', 'natal')">-</div>
+                    </div>
+                    <div class="pillar" id="day-pillar">
+                        <h3>วัน (Day)</h3>
+                        <div class="box day-master" id="day-heaven" onclick="showPopup('ราศีบน วัน (ดิถี)', 'day-heaven', 'natal')">-</div>
+                        <div class="box" id="day-earth" onclick="showPopup('ราศีล่าง วัน', 'day-earth', 'natal')">-</div>
+                    </div>
+                    <div class="pillar" id="month-pillar">
+                        <h3>เดือน (Month)</h3>
+                        <div class="box" id="month-heaven" onclick="showPopup('ราศีบน เดือน', 'month-heaven', 'natal')">-</div>
+                        <div class="box" id="month-earth" onclick="showPopup('ราศีล่าง เดือน', 'month-earth', 'natal')">-</div>
+                    </div>
+                    <div class="pillar" id="year-pillar">
+                        <h3>ปี (Year)</h3>
+                        <div class="box" id="year-heaven" onclick="showPopup('ราศีบน ปี', 'year-heaven', 'natal')">-</div>
+                        <div class="box" id="year-earth" onclick="showPopup('ราศีล่าง ปี', 'year-earth', 'natal')">-</div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div> <button id="download-btn" class="save-btn" style="display: none; background-color: #1976d2; margin-top: -10px; margin-bottom: 20px;" onclick="downloadBaziImage()">📸 บันทึกรูปดวงชะตานี้ลงเครื่อง</button>
 
         <div id="luck-sections" style="display: none;">
             <h2 class="section-title">วัยจร 10 ปี (Da Yun)</h2>
@@ -96,6 +100,10 @@
         </div>
 
         <div class="ai-section" style="margin-top: 30px; text-align: center;">
+            <div id="custom-question-box" style="display: none; margin-bottom: 15px;">
+                <input type="text" id="ai-custom-question" placeholder="❓ มีคำถามพิเศษไหมครับ? (เช่น ปีนี้ควรเปลี่ยนงานไหม?)" style="width: 100%; box-sizing: border-box; border: 2px solid #9c27b0; padding: 12px; font-size: 16px;">
+            </div>
+
             <button id="ai-btn" class="ai-btn" style="display: none; background-color: #673ab7; color: white; border: none; cursor: pointer; border-radius: 5px; width: 100%; font-size: 18px; padding: 15px; font-weight: bold;" onclick="analyzeWithAI()">✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก</button>
             
             <div id="ai-result-box" style="display: none; margin-top: 20px; padding: 25px; background: #f3e5f5; border-radius: 10px; border-left: 5px solid #9c27b0; text-align: left; line-height: 1.6; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
@@ -103,7 +111,7 @@
             </div>
         </div>
 
-        <button id="save-btn" class="save-btn" style="display: none;" onclick="saveToGoogleSheets()">บันทึกดวงนี้ลงฐานข้อมูล</button>
+        <button id="save-btn" class="save-btn" style="display: none; margin-top: 20px;" onclick="saveToGoogleSheets()">💾 บันทึกดวงนี้ลงฐานข้อมูล</button>
 
         <div id="popup-modal" class="modal" style="display: none;">
             <div class="modal-content">

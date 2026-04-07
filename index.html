@@ -53,6 +53,14 @@
             <div id="liu-nian-list" class="luck-grid"></div>
         </div>
 
+        <div class="ai-section" style="margin-top: 30px; text-align: center;">
+            <button id="ai-btn" class="ai-btn" style="display: none; background-color: #673ab7; color: white; border: none; cursor: pointer; border-radius: 5px; width: 100%; font-size: 18px; padding: 15px; font-weight: bold;" onclick="analyzeWithAI()">✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก</button>
+            
+            <div id="ai-result-box" style="display: none; margin-top: 20px; padding: 25px; background: #f3e5f5; border-radius: 10px; border-left: 5px solid #9c27b0; text-align: left; line-height: 1.6; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <div id="ai-content">กำลังอัญเชิญซินแส...</div>
+            </div>
+        </div>
+
         <button id="save-btn" class="save-btn" style="display: none;" onclick="saveToGoogleSheets()">บันทึกดวงนี้ลงฐานข้อมูล</button>
 
         <div id="popup-modal" class="modal" style="display: none;">

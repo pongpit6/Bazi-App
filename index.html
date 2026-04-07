@@ -35,37 +35,47 @@
 
         <div id="capture-area" style="background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
             
+            <div id="element-chart" class="element-chart-container" style="display:none;"></div>
+            
             <div id="dm-strength-box" class="dm-strength-container" style="display:none;"></div>
 
             <div id="current-bazi-section" style="display: block; position: relative;">
                 <h2 id="current-time-title" class="section-title" style="color: #2e7d32; border-left-color: #2e7d32;">⏳ พลังงานกาลเวลาปัจจุบัน (Current Time)</h2>
                 <button id="reset-time-btn" onclick="resetTimeMachine()" style="display: none; position: absolute; right: 0; top: 30px; background: #f44336; padding: 5px 10px; font-size: 12px;">🕒 กลับสู่ปัจจุบัน</button>
                 
-                <p style="text-align: center; color: #555; font-size: 14px; margin-top: -10px;">(เอาเมาส์ชี้เพื่อดูความหมาย หรือคลิกเพื่อดูผลกระทบกับดวง)</p>
+                <p style="text-align: center; color: #555; font-size: 14px; margin-top: -10px;">(เอาเมาส์ชี้สัญลักษณ์เพื่อดูความหมาย)</p>
                 <div class="bazi-grid current-time-grid">
                     <div class="pillar" id="curr-hour-pillar">
                         <h3>ยาม (Hour)</h3>
                         <div id="curr-hour-shishen" class="luck-shishen tooltip-container" style="visibility:hidden;">-</div>
                         <div class="box" id="curr-hour-heaven" onclick="showPopup('ราศีบน กาลเวลา', 'hour-heaven', 'current')">-</div>
                         <div class="box" id="curr-hour-earth" onclick="showPopup('ราศีล่าง กาลเวลา', 'hour-earth', 'current')">-</div>
+                        <div id="curr-hour-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="curr-hour-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="curr-day-pillar">
                         <h3>วัน (Day)</h3>
                         <div id="curr-day-shishen" class="luck-shishen tooltip-container" style="visibility:hidden;">-</div>
                         <div class="box" id="curr-day-heaven" onclick="showPopup('ราศีบน กาลเวลา', 'day-heaven', 'current')">-</div>
                         <div class="box" id="curr-day-earth" onclick="showPopup('ราศีล่าง กาลเวลา', 'day-earth', 'current')">-</div>
+                        <div id="curr-day-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="curr-day-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="curr-month-pillar">
                         <h3>เดือน (Month)</h3>
                         <div id="curr-month-shishen" class="luck-shishen tooltip-container" style="visibility:hidden;">-</div>
                         <div class="box" id="curr-month-heaven" onclick="showPopup('ราศีบน กาลเวลา', 'month-heaven', 'current')">-</div>
                         <div class="box" id="curr-month-earth" onclick="showPopup('ราศีล่าง กาลเวลา', 'month-earth', 'current')">-</div>
+                        <div id="curr-month-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="curr-month-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="curr-year-pillar">
                         <h3>ปี (Year)</h3>
                         <div id="curr-year-shishen" class="luck-shishen tooltip-container" style="visibility:hidden;">-</div>
                         <div class="box" id="curr-year-heaven" onclick="showPopup('ราศีบน กาลเวลา', 'year-heaven', 'current')">-</div>
                         <div class="box" id="curr-year-earth" onclick="showPopup('ราศีล่าง กาลเวลา', 'year-earth', 'current')">-</div>
+                        <div id="curr-year-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="curr-year-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                 </div>
             </div>
@@ -78,24 +88,32 @@
                         <div id="hour-shishen" class="luck-shishen tooltip-container">-</div>
                         <div class="box" id="hour-heaven" onclick="showPopup('ราศีบน ยาม', 'hour-heaven', 'natal')">-</div>
                         <div class="box" id="hour-earth" onclick="showPopup('ราศีล่าง ยาม', 'hour-earth', 'natal')">-</div>
+                        <div id="hour-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="hour-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="day-pillar">
                         <h3>วัน (Day)</h3>
                         <div id="day-shishen" class="luck-shishen tooltip-container" style="background:#e3f2fd; border-color:#90caf9; color:#1565c0;">ดิถี (ตัวคุณ)<span class="tooltip-text">ธาตุประจำตัว แสดงถึงตัวตนที่แท้จริงของคุณ</span></div>
                         <div class="box day-master" id="day-heaven" onclick="showPopup('ราศีบน วัน (ดิถี)', 'day-heaven', 'natal')">-</div>
                         <div class="box" id="day-earth" onclick="showPopup('ราศีล่าง วัน', 'day-earth', 'natal')">-</div>
+                        <div id="day-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="day-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="month-pillar">
                         <h3>เดือน (Month)</h3>
                         <div id="month-shishen" class="luck-shishen tooltip-container">-</div>
                         <div class="box" id="month-heaven" onclick="showPopup('ราศีบน เดือน', 'month-heaven', 'natal')">-</div>
                         <div class="box" id="month-earth" onclick="showPopup('ราศีล่าง เดือน', 'month-earth', 'natal')">-</div>
+                        <div id="month-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="month-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                     <div class="pillar" id="year-pillar">
                         <h3>ปี (Year)</h3>
                         <div id="year-shishen" class="luck-shishen tooltip-container">-</div>
                         <div class="box" id="year-heaven" onclick="showPopup('ราศีบน ปี', 'year-heaven', 'natal')">-</div>
                         <div class="box" id="year-earth" onclick="showPopup('ราศีล่าง ปี', 'year-earth', 'natal')">-</div>
+                        <div id="year-dishi" class="dishi-badge tooltip-container"></div>
+                        <div id="year-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                 </div>
             </div>

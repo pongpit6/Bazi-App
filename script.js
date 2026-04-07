@@ -33,7 +33,6 @@ const shiShenMap = {
     '偏印': 'เพียงอิ่ง (อุปถัมภ์รอง)', '正印': 'เจี้ยอิ่ง (อุปถัมภ์หลัก)'
 };
 
-// 🌟 เพิ่มคลังข้อมูลคำแปลสิบเทพ (Tooltip Definitions) 🌟
 const shiShenDesc = {
     'ผี่เจียง': 'ธาตุเดียวกับตัวคุณ\nหมายถึง: เพื่อนฝูง, หุ้นส่วน, คู่แข่ง, ความเสมอภาค',
     'เกียบไช้': 'ธาตุคู่แข่งที่ต่างขั้วหยินหยาง\nหมายถึง: การแย่งชิง, การลงทุนที่มีความเสี่ยง, เสียเปรียบ',
@@ -77,10 +76,10 @@ function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
     let stars = [];
     if ({ '甲':['丑','未'], '戊':['丑','未'], '庚':['丑','未'], '乙':['子','申'], '己':['子','申'], '丙':['亥','酉'], '丁':['亥','酉'], '壬':['卯','巳'], '癸':['卯','巳'], '辛':['寅','午'] }[dayGan]?.includes(branch)) stars.push({name: '🌟 ดาวอุปถัมภ์', desc: 'คนคอยช่วยเหลือ ปกป้องคุ้มครอง', icon: '🌟'});
     if ({ '申':'酉', '子':'酉', '辰':'酉', '亥':'子', '卯':'子', '未':'子', '寅':'卯', '午':'卯', '戌':'卯', '巳':'午', '酉':'午', '丑':'午' }[yearZhi] === branch || { '申':'酉', '子':'酉', '辰':'酉', '亥':'子', '卯':'子', '未':'子', '寅':'卯', '午':'卯', '戌':'卯', '巳':'午', '酉':'午', '丑':'午' }[dayZhi] === branch) stars.push({name: '🌸 ดาวดอกท้อ', desc: 'มีเสน่ห์ดึงดูด เป็นที่รักและเมตตา', icon: '🌸'});
-    if ({ '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[yearZhi] === branch || { '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[dayZhi] === branch) stars.push({name: '🐎 ดาวม้าเดินทาง', desc: 'มีเกณฑ์โยกย้าย เดินทางบ่อย ชีพจรลงเท้า', icon: '🐎'});
-    if ({ '甲':'寅', '乙':'卯', '丙':'午', '戊':'午', '丁':'巳', '己':'巳', '庚':'申', '辛':'酉', '壬':'亥', '癸':'子' }[dayGan] === branch) stars.push({name: '💰 ดาวลู่เสิน', desc: 'ความอุดมสมบูรณ์ มั่งคั่ง มีกินมีใช้', icon: '💰'});
-    if ({ '甲':'巳', '乙':'午', '丙':'申', '戊':'申', '丁':'酉', '己':'酉', '庚':'亥', '辛':'子', '壬':'寅', '癸':'卯' }[dayGan] === branch) stars.push({name: '📚 ดาวเหวินชาง', desc: 'ปัญญาเลิศ หัวไว เรียนรู้เก่ง', icon: '📚'});
-    if ({ '甲':'卯', '丙':'午', '戊':'午', '庚':'酉', '壬':'子' }[dayGan] === branch) stars.push({name: '⚔️ ดาวดาบแกะ', desc: 'ความเด็ดขาด ใจร้อน พลังต่อสู้สูง', icon: '⚔️'});
+    if ({ '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[yearZhi] === branch || { '申':'寅', '子':'寅', '辰':'寅', '亥':'巳', '卯':'巳', '未':'巳', '寅':'申', '午':'申', '戌':'申', '巳':'亥', '酉':'亥', '丑':'亥' }[dayZhi] === branch) stars.push({name: '🐎 ดาวม้าเดินทาง', desc: 'มีเกณฑ์โยกย้าย เดินทางบ่อย', icon: '🐎'});
+    if ({ '甲':'寅', '乙':'卯', '丙':'午', '戊':'午', '丁':'巳', '己':'巳', '庚':'申', '辛':'酉', '壬':'亥', '癸':'子' }[dayGan] === branch) stars.push({name: '💰 ดาวลู่เสิน', desc: 'ความอุดมสมบูรณ์ มั่งคั่ง', icon: '💰'});
+    if ({ '甲':'巳', '乙':'午', '丙':'申', '戊':'申', '丁':'酉', '己':'酉', '庚':'亥', '辛':'子', '壬':'寅', '癸':'卯' }[dayGan] === branch) stars.push({name: '📚 ดาวเหวินชาง', desc: 'ปัญญาเลิศ หัวไว เรียนเก่ง', icon: '📚'});
+    if ({ '甲':'卯', '丙':'午', '戊':'午', '庚':'酉', '壬':'子' }[dayGan] === branch) stars.push({name: '⚔️ ดาวดาบแกะ', desc: 'ความเด็ดขาด พลังต่อสู้สูง', icon: '⚔️'});
     return stars;
 }
 
@@ -105,7 +104,6 @@ function getBoxInnerHtml(char, contextStars = []) {
         html += `</div>`;
     }
     
-    // 🌟 โชว์ดาวบนหน้าจอหลัก 🌟
     if (contextStars && contextStars.length > 0) {
         html += `<div class="star-badges-container">`;
         contextStars.forEach(star => {
@@ -123,7 +121,6 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
     box.classList.remove('wood', 'fire', 'earth', 'metal', 'water');
     
     let stars = [];
-    // คำนวณดาวเฉพาะราศีล่าง (Earthly Branches)
     if (isEarth && currentBaZiData && currentBaZiData.day && currentBaZiData.day.gan) {
         stars = checkSpecialStars(chineseChar, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
     }
@@ -132,13 +129,15 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
     if(data.type) box.classList.add(data.type);
 }
 
+// 🌟 ฟังก์ชันแก้บั๊กชื่อ ID ผิด 🌟
 function updateShiShenLabels(dataObj, prefix, dayGan) {
     if(!dayGan) return;
     ['year', 'month', 'day', 'hour'].forEach(p => {
-        let el = document.getElementById(`${prefix}-${p}-shishen`);
+        let elId = prefix ? `${prefix}-${p}-shishen` : `${p}-shishen`; // ✅ แก้ไขตรงนี้
+        let el = document.getElementById(elId);
         if(el) {
             if(p === 'day' && prefix === '') {
-                // ดิถี ไม่เปลี่ยนข้ามไป
+                // ข้ามดิถี
             } else {
                 const gan = dataObj[p].gan;
                 let tenGodCh = tenGodsMap[dayGan][gan];
@@ -234,7 +233,6 @@ function getInteractionHTML(gan, zhi) {
     let res = [];
     if (!currentBaZiData.day) return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
     
-    // Tooltip สำหรับ ฮะ/ชง ในกล่องผลลัพธ์
     const interactDesc = {
         'ฮะ': 'รวมตัว ส่งเสริม ผูกพัน ราบรื่น',
         'ชง': 'ปะทะ ขัดแย้ง เปลี่ยนแปลงกะทันหัน',
@@ -277,7 +275,6 @@ function renderCurrentTimeBaZi() {
         renderBox(`curr-${p}-earth`, currentTimeData[p].zhi, 'current', true);
     });
 
-    // อัปเดตสิบเทพเวลาปัจจุบัน ถ้าผูกดวงแล้ว
     if(currentBaZiData.day && currentBaZiData.day.gan) {
         updateShiShenLabels(currentTimeData, 'curr', currentBaZiData.day.gan);
     }
@@ -340,7 +337,6 @@ function calculateBaZi() {
         renderBox(`${p}-earth`, currentBaZiData[p].zhi, 'natal', true);
     });
 
-    // 🌟 แสดงสิบเทพบนเสากำเนิด 🌟
     updateShiShenLabels(currentBaZiData, '', currentBaZiData.day.gan);
 
     renderCurrentTimeBaZi();
@@ -393,7 +389,7 @@ function renderLuck(solar, genderNum) {
                 <div class="age-label">อายุ ${dy.getStartAge()}</div>
                 <div class="luck-shishen tooltip-container">${tenGodTh}<span class="tooltip-text">${desc}</span></div>
                 <div class="box ${elementMap[gan]?.type}">${getBoxInnerHtml(gan)}</div>
-                <div class="box ${elementMap[zhi]?.type}">${getBoxInnerHtml(zhi)}</div>
+                <div class="box ${elementMap[zhi]?.type}">${getBoxInnerHtml(zhi, checkSpecialStars(zhi, dayGan, currentBaZiData.year.zhi, currentBaZiData.day.zhi))}</div>
                 <div class="year-label">${dy.getStartYear()}</div>
                 ${interactionHtml}
             </div>`;
@@ -417,7 +413,7 @@ function renderLuck(solar, genderNum) {
                 <div class="age-label">${tYear}</div>
                 <div class="luck-shishen tooltip-container">${tenGodTh}<span class="tooltip-text">${desc}</span></div>
                 <div class="box ${elementMap[yGan]?.type}">${getBoxInnerHtml(yGan)}</div>
-                <div class="box ${elementMap[yZhi]?.type}">${getBoxInnerHtml(yZhi)}</div>
+                <div class="box ${elementMap[yZhi]?.type}">${getBoxInnerHtml(yZhi, checkSpecialStars(yZhi, dayGan, currentBaZiData.year.zhi, currentBaZiData.day.zhi))}</div>
                 <div class="year-label">ปี${lYear.getYearShengXiao()}</div>
                 ${interactionHtml}
                 <button class="time-warp-btn" onclick="travelToYear(${tYear})">⏳ วาร์ป</button>

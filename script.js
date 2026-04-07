@@ -8,7 +8,7 @@ let savedRecordsList = [];
 let partnerBaZiData = {};
 let currentKongWang = ""; 
 let currentVaults = {}; 
-let elementCounts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 }; // 🌟 เก็บเปอร์เซ็นต์ธาตุ
+let elementCounts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 }; 
 
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳', thName: 'ไม้หยาง' }, '乙': { type: 'wood', icon: '🌿', thName: 'ไม้หยิน' },
@@ -85,6 +85,47 @@ const interactions = {
     earthlyHarms: { '子':'未', '未':'子', '丑':'午', '午':'丑', '寅':'巳', '巳':'寅', '卯':'辰', '辰':'卯', '申':'亥', '亥':'申', '酉':'戌', '戌':'酉' },
     earthlyDestructions: { '子':'酉', '酉':'子', '丑':'辰', '辰':'丑', '寅':'亥', '亥':'寅', '卯':'午', '午':'卯', '巳':'申', '申':'巳', '未':'戌', '戌':'未' }
 };
+
+// 🌟 พจนานุกรมคำอธิบายเปรียบเปรย 5 ธาตุ (Nature Metaphors) 🌟
+const elementMetaphors = {
+    'wood': { // ดิถีธาตุไม้
+        'water': { fav: 'น้ำหล่อเลี้ยงให้ต้นไม้เติบโตงอกงาม', unfav: 'น้ำมากเกินไปทำให้รากเน่า ต้นไม้ลอยคอไร้รากฐาน' },
+        'wood': { fav: 'รวมกันเป็นป่าใหญ่ แข็งแรงต้านทานพายุได้', unfav: 'ต้นไม้เบียดเสียดกัน แย่งสารอาหารจนแคระแกร็น' },
+        'fire': { fav: 'ต้นไม้ผลิใบออกดอกสว่างไสว ได้แสดงความสามารถเต็มที่', unfav: 'ไฟเผาไหม้ต้นไม้จนมอดไหม้กลายเป็นเถ้าถ่าน เหนื่อยล้าหมดแรง' },
+        'earth': { fav: 'หน้าดินอุดมสมบูรณ์ รากหยั่งลึกหาอาหารได้เต็มที่ (ได้โชคลาภ)', unfav: 'ดินแข็งหินหนาเกินไป รากชอนไชไม่ไหว หาเงินเหนื่อย' },
+        'metal': { fav: 'ขวานกรรไกรมาตัดแต่งกิ่งไม้ให้เป็นทรงสวยงาม ใช้งานได้จริง', unfav: 'โลหะมีดขวานมาฟันโค่นต้นไม้จนตาย ขัดขวางและกดดันอย่างหนัก' }
+    },
+    'fire': { // ดิถีธาตุไฟ
+        'wood': { fav: 'ไม้เป็นฟืนเชื้อเพลิงให้ไฟลุกโชนอย่างต่อเนื่อง', unfav: 'ฟืนไม้เยอะเกินไปจนไฟลุกท่วม ควันโขมง อึดอัดคิดมาก' },
+        'fire': { fav: 'เปลวไฟดวงเล็กดวงน้อยรวมกันส่องสว่างเจิดจ้า', unfav: 'ไฟโหมกระหน่ำรุนแรง เผาผลาญทุกอย่างจนแห้งแล้ง' },
+        'earth': { fav: 'ดินช่วยดูดซับและระบายความร้อนที่ล้นเกินให้อยู่ในจุดสมดุล', unfav: 'ดินเถ้าถ่านมีมากเกินไปจนทับถมดับไฟให้มอดสนิท ไร้แสงสว่าง' },
+        'metal': { fav: 'ไฟได้หลอมโลหะแร่ธาตุให้กลายเป็นเครื่องประดับมีค่า (ได้ทรัพย์)', unfav: 'โลหะแข็งเกินไป ไฟหลอมไม่ไหวเปลืองพลังงานเปล่าๆ' },
+        'water': { fav: 'น้ำมาช่วยควบคุมความรุ่มร้อนให้อยู่ในกรอบ และสะท้อนแสงไฟให้สวยงาม', unfav: 'คลื่นน้ำสาดซัดมาดับไฟให้มอดสนิท ถูกสกัดกั้นขัดขวาง' }
+    },
+    'earth': { // ดิถีธาตุดิน
+        'fire': { fav: 'ไฟเผาไหม้กลายเป็นเถ้าถ่าน บำรุงหน้าดินให้อุดมสมบูรณ์', unfav: 'แดดแผดเผาจนดินแห้งแล้งแตกระแหง ไร้ชีวิตชีวา' },
+        'earth': { fav: 'ดินฝุ่นผงรวมตัวกันเป็นภูเขาที่กว้างใหญ่ หนักแน่นมั่นคง', unfav: 'ดินภูเขาทับถมซ้อนกันหนักอึ้ง ดื้อรั้น ไม่ก่อให้เกิดประโยชน์' },
+        'metal': { fav: 'แร่ธาตุในดินถูกขุดขึ้นมาเจียระไน สร้างผลงานให้คนเห็น', unfav: 'ขุดหน้าดินมากเกินไปจนภูเขากลวง พังทลาย หมดสภาพ' },
+        'water': { fav: 'สายน้ำหล่อเลี้ยงหน้าดินแห้งแล้งให้ชุ่มชื้น เพาะปลูกได้ (เงินหมุนเวียน)', unfav: 'น้ำหลากสาดซัดหน้าดินจนถล่มทลาย เก็บเงินไม่อยู่โคลนตมวุ่นวาย' },
+        'wood': { fav: 'รากไม้ช่วยยึดหน้าดินไม่ให้พังทลาย ควบคุมดินให้อยู่ทรง', unfav: 'ป่ารกชัฏรากไม้ชอนไชดูดซับสารอาหารจนดินเสื่อมโทรม อึดอัดกดดัน' }
+    },
+    'metal': { // ดิถีธาตุทอง
+        'earth': { fav: 'ผืนดินคอยปกป้องอุ้มชูและให้กำเนิดแร่ธาตุทอง', unfav: 'ดินหนาเกินไปทับถมฝังกลบเครื่องประดับ/แร่ธาตุ ทำให้หมองและไร้ค่า' },
+        'metal': { fav: 'หลอมรวมแร่ธาตุโลหะเข้าด้วยกันจนกลายเป็นอาวุธที่แกร่งกล้า', unfav: 'โลหะกระทบโลหะเกิดการแตกหัก แข็งกร้าวเกินไป แย่งชิงความเด่น' },
+        'water': { fav: 'น้ำช่วยชำระล้างขัดเงาให้แร่ธาตุ/เครื่องประดับเปล่งประกายโดดเด่น', unfav: 'น้ำลึกเกินไปทำให้ทองจมบาดาลมิดมืด หรือเป็นสนิมกัดกิน' },
+        'wood': { fav: 'เป็นท่อนไม้ซุงให้ขวาน/เลื่อยไปฟันตัดตกแต่ง สร้างผลงานและมูลค่า', unfav: 'ท่อนไม้แข็งเกินไป ดาบทื่อฟันไม่เข้า เสียแรงเปล่า (เสียทรัพย์)' },
+        'fire': { fav: 'เปลวไฟมาหลอมโลหะ/แร่ธาตุ ให้กลายเป็นเครื่องมือที่สวยงามมีระดับ', unfav: 'ไฟบรรลัยกัลป์รุนแรงเกินไป หลอมโลหะจนละลายเสียรูปทรง' }
+    },
+    'water': { // ดิถีธาตุน้ำ
+        'metal': { fav: 'แร่ธาตุในหินตาน้ำคอยกลั่นและหล่อเลี้ยงให้แม่น้ำไม่เหือดแห้ง', unfav: 'ตาน้ำแตกทะลักพัดพาสาดซัดทุกสิ่งคุมไม่อยู่ วุ่นวายคิดมาก' },
+        'water': { fav: 'หยดน้ำสายเล็กๆ รวมตัวกันเป็นแม่น้ำสายใหญ่ที่มีพละกำลัง', unfav: 'คลื่นยักษ์สึนามิ น้ำหลากท่วมท้นไร้ทิศทาง ไร้ขอบเขต' },
+        'wood': { fav: 'ต้นไม้ช่วยดูดซับน้ำ ระบายพลังงานที่ล้นทะลักให้เกิดประโยชน์', unfav: 'ต้นไม้มากเกินไปดูดซับน้ำจนแห้งขอด เหือดแห้งหมดกำลัง' },
+        'fire': { fav: 'แสงตะวันสะท้อนผิวน้ำงดงาม สร้างสมดุลอุณหภูมิให้แม่น้ำอบอุ่น', unfav: 'ไฟกองใหญ่ต้มน้ำจนเดือดพล่าน ระเหยกลายเป็นไอ อารมณ์แปรปรวน' },
+        'earth': { fav: 'ดินช่วยสร้างเขื่อนกั้นน้ำให้อยู่ในร่องรอย บังคับทิศทางให้ใช้ประโยชน์ได้', unfav: 'ดินโคลนสาดลงน้ำ ทำให้น้ำขุ่นมัว สกปรกมืดมิด ไร้ทางออก' }
+    }
+};
+
+const iconMap = { 'wood': '🌳', 'fire': '🔥', 'earth': '⛰️', 'metal': '🪙', 'water': '💧' };
 
 function calculateVaults(dayGan) {
     if (!dayGan) return {};
@@ -167,7 +208,6 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
         if(isKw) box.style.opacity = '0.6';
         else box.style.opacity = '1';
 
-        // 🌟 Visual Yong Shen (ไฮไลต์ธาตุให้คุณ/ให้โทษ) 🌟
         if (dmStrengthData.favTypes && dmStrengthData.favTypes.includes(data.type)) {
             box.classList.add('fav-element');
         } else if (dmStrengthData.unfavTypes && dmStrengthData.unfavTypes.includes(data.type)) {
@@ -285,7 +325,6 @@ function calculateDMStrength() {
     let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
     let supportingTh = `${thTypeMap[supportType]}, ${thTypeMap[dmType]}`;
 
-    // 🌟 อัปเดตการเก็บอาร์เรย์ของธาตุที่ให้คุณ/ให้โทษ เพื่อนำไปไฮไลต์สี 🌟
     let favArr = score >= 50 ? weakeningTypes : [supportType, dmType];
     let unfavArr = score >= 50 ? [supportType, dmType] : weakeningTypes;
 
@@ -302,17 +341,36 @@ function calculateDMStrength() {
     let dmHtml = `<div class="dm-strength-title">กำลังของดิถี (Day Master Strength)</div>`;
     dmHtml += `<p style="font-size:15px;">ดิถี (ตัวคุณ) คือ <strong>${elementMap[dm].thName}</strong> (ธาตุ${thTypeMap[dmType]})</p>`;
     
+    // 🌟 ระบบสร้างคำบรรยายเปรียบเปรยเชิงลึก (Nature Metaphor) 🌟
+    let favHtml = `<ul style="margin-top:8px; margin-bottom:15px; padding-left:20px; font-size:13px; line-height:1.6;">`;
+    favArr.forEach(t => {
+        let metaDesc = elementMetaphors[dmType][t].fav;
+        favHtml += `<li style="margin-bottom:5px;"><b>${iconMap[t]} ธาตุ${thTypeMap[t]}:</b> ${metaDesc}</li>`;
+    });
+    favHtml += `</ul>`;
+
+    let unfavHtml = `<ul style="margin-top:8px; padding-left:20px; font-size:13px; line-height:1.6;">`;
+    unfavArr.forEach(t => {
+        let metaDesc = elementMetaphors[dmType][t].unfav;
+        unfavHtml += `<li style="margin-bottom:5px;"><b>${iconMap[t]} ธาตุ${thTypeMap[t]}:</b> ${metaDesc}</li>`;
+    });
+    unfavHtml += `</ul>`;
+
     if (score >= 50) {
         dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-strong">💪 ดิถีแข็งแรง (Strong)</span> (คะแนน ${score}/100)</p>`;
-        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
-        dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่แข็งแรง:</strong> มีธาตุส่งเสริมอยู่มาก (เช่น <strong>${supportingElements[0]}</strong>)</p>`;
-        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ควรเสริม):</strong> ธาตุ${weakeningTh}</p>`;
+        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0;">`;
+        dmHtml += `<p style="margin-bottom: 8px; font-size:13.5px;"><b>เหตุผลที่แข็งแรง:</b> มีธาตุส่งเสริมอยู่มากเกินไป (เช่น <strong>${supportingElements[0]}</strong>)</p>`;
+        dmHtml += `<hr style="border:0.5px dashed #ccc; margin:12px 0;">`;
+        dmHtml += `<p style="color:#2e7d32;"><strong>✅ ธาตุให้คุณ (ควรเข้าหาเพื่อระบายพลัง):</strong></p>` + favHtml;
+        dmHtml += `<p style="color:#d32f2f;"><strong>❌ ธาตุให้โทษ (ควรหลีกเลี่ยงเพราะทำให้ล้น):</strong></p>` + unfavHtml;
         dmHtml += `</div>`;
     } else {
         dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-weak">🍃 ดิถีอ่อนแอ (Weak)</span> (คะแนน ${score}/100)</p>`;
-        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
-        dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่อ่อนแอ:</strong> มีธาตุบั่นทอนอยู่มาก (เช่น <strong>${weakeningElements[0]}</strong>)</p>`;
-        dmHtml += `<p><strong>✅ ธาตุให้คุณ (ควรเสริม):</strong> ธาตุ${supportingTh}</p>`;
+        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0;">`;
+        dmHtml += `<p style="margin-bottom: 8px; font-size:13.5px;"><b>เหตุผลที่อ่อนแอ:</b> มีธาตุบั่นทอนอยู่มากเกินไป (เช่น <strong>${weakeningElements[0]}</strong>)</p>`;
+        dmHtml += `<hr style="border:0.5px dashed #ccc; margin:12px 0;">`;
+        dmHtml += `<p style="color:#2e7d32;"><strong>✅ ธาตุให้คุณ (ควรเข้าหาเพื่อหนุนนำ):</strong></p>` + favHtml;
+        dmHtml += `<p style="color:#d32f2f;"><strong>❌ ธาตุให้โทษ (ควรหลีกเลี่ยงเพราะทำให้เหนื่อย):</strong></p>` + unfavHtml;
         dmHtml += `</div>`;
     }
 
@@ -432,7 +490,6 @@ function showPopup(titleName, elementId, type) {
     document.getElementById('popup-title').innerText = `${titleName} : ${document.getElementById(elementId).querySelector('.char').innerText}`;
     document.getElementById('popup-modal').style.display = "flex";
 }
-
 function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
 
 function renderCurrentTimeBaZi() {
@@ -486,6 +543,7 @@ function resetTimeMachine() {
     document.getElementById('reset-time-btn').style.display = 'none';
 }
 
+// ... โค้ดส่วนล่าง (calculateBaZi, Tabs, Modal) ยังเหมือนเดิมในสเต็ปที่แล้วทั้งหมดครับ ...
 function calculateBaZi() {
     const dateInput = document.getElementById('birth_date').value;
     const timeInput = document.getElementById('birth_time').value;
@@ -509,8 +567,6 @@ function calculateBaZi() {
     };
 
     currentVaults = calculateVaults(currentBaZiData.day.gan);
-
-    // 🌟 ต้องเรียกฟังก์ชันคำนวณกำลังดิถี "ก่อน" เพื่อให้รู้ธาตุดี/ร้าย สำหรับการไฮไลต์กล่อง 🌟
     calculateDMStrength();
 
     ['year', 'month', 'day', 'hour'].forEach(p => {
@@ -552,18 +608,13 @@ function calculateBaZi() {
 function getInteractionHTML(gan, zhi) {
     let res = [];
     if (!currentBaZiData.day) return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
-    
     const interactDesc = { 'ฮะ': 'รวมตัว ส่งเสริม ผูกพัน ราบรื่น', 'ชง': 'ปะทะ ขัดแย้ง เปลี่ยนแปลงกะทันหัน', 'เฮ้ง': 'เบียดเบียน อึดอัดใจ วุ่นวาย', 'ไห่': 'ให้ร้าย แทงข้างหลัง สุขภาพ', 'ผั่ว': 'แตกหัก เสียหาย เริ่มต้นใหม่' };
-
-    if (interactions.heavenlyCombos[gan] === currentBaZiData.day.gan) 
-        res.push(`<div class="interact-good tooltip-container">✨ ฟ้าฮะ<span class="tooltip-text">${interactDesc['ฮะ']}</span></div>`);
-
+    if (interactions.heavenlyCombos[gan] === currentBaZiData.day.gan) res.push(`<div class="interact-good tooltip-container">✨ ฟ้าฮะ<span class="tooltip-text">${interactDesc['ฮะ']}</span></div>`);
     ['year', 'month', 'day', 'hour'].forEach(p => {
         let chartZhi = currentBaZiData[p].zhi;
         if (interactions.earthlyClashes[zhi] === chartZhi) res.push(`<div class="interact-bad tooltip-container">💥 ชง${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ชง']}กับเสา${pillarNamesTh[p]}</span></div>`);
         else if (interactions.earthlyCombos[zhi] === chartZhi) res.push(`<div class="interact-good tooltip-container">🤝 ฮะ${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ฮะ']}กับเสา${pillarNamesTh[p]}</span></div>`);
     });
-
     if(res.length > 0) return `<div class="luck-interaction">${res.slice(0, 3).join('')}</div>`; 
     return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
 }
@@ -623,32 +674,21 @@ function renderLuck(solar, genderNum) {
     }
 }
 
-// 🌟 ระบบจัดการ TABS ในคัมภีร์ดวงชะตา 🌟
 function openEncycTab(evt, tabName) {
     let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-        tabcontent[i].classList.remove("active");
-    }
+    for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; tabcontent[i].classList.remove("active"); }
     tablinks = document.getElementsByClassName("tab-link");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(tabName).style.display = "block";
-    document.getElementById(tabName).classList.add("active");
+    for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+    document.getElementById(tabName).style.display = "block"; document.getElementById(tabName).classList.add("active");
     if(evt) evt.currentTarget.className += " active";
 }
 
 function openEncyclopedia() {
     if (!currentBaZiData.day) return alert("กรุณาคำนวณผูกดวงก่อนเปิดคัมภีร์ครับ");
-    
-    const dmGan = currentBaZiData.day.gan;
-    const dmType = elementMap[dmGan].thName;
-
+    const dmGan = currentBaZiData.day.gan; const dmType = elementMap[dmGan].thName;
     let html = '';
 
-    // --- TAB 1: พื้นฐาน / ธาตุที่ขาดหาย ---
     html += `<div id="tab-basic" class="tab-content active">`;
     html += `<div class="encyc-section">
                 <h3 class="encyc-title">👤 ดิถีตัวตน (Day Master)</h3>
@@ -656,9 +696,7 @@ function openEncyclopedia() {
                 <p>${dmStrengthData.status} ทำให้คุณต้องการ <b>ธาตุ${dmStrengthData.favorable}</b> เพื่อสร้างสมดุลในชีวิต (เป็นธาตุให้คุณ)</p>
              </div>`;
 
-    // เช็คธาตุที่ขาดหาย
-    let missingElements = [];
-    const thNames = { wood: 'ไม้', fire: 'ไฟ', earth: 'ดิน', metal: 'ทอง', water: 'น้ำ' };
+    let missingElements = []; const thNames = { wood: 'ไม้', fire: 'ไฟ', earth: 'ดิน', metal: 'ทอง', water: 'น้ำ' };
     const missingAdvice = {
         wood: 'ขาดความยืดหยุ่น การเติบโต และความเมตตา -> ควรปลูกต้นไม้ อ่านหนังสือ พัฒนาตัวเองเสมอ',
         fire: 'ขาดความกระตือรือร้น ความสุข การแสดงออก -> ควรหาแพสชั่น รอยยิ้ม และการเข้าสังคม',
@@ -666,47 +704,22 @@ function openEncyclopedia() {
         metal: 'ขาดความเด็ดขาด ยุติธรรม การตัดสินใจ -> ควรกล้าตัดสินใจ จัดระเบียบชีวิตให้ชัดเจน',
         water: 'ขาดปัญญา ไหวพริบ การปรับตัว -> ควรเรียนรู้สิ่งใหม่ๆ พลิกแพลงให้ลื่นไหลเหมือนน้ำ'
     };
+    for(let t in elementCounts) { if(elementCounts[t] === 0) missingElements.push(`<li><b>ธาตุ${thNames[t]}:</b> ${missingAdvice[t]}</li>`); }
 
-    for(let t in elementCounts) {
-        if(elementCounts[t] === 0) missingElements.push(`<li><b>ธาตุ${thNames[t]}:</b> ${missingAdvice[t]}</li>`);
-    }
-
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">⚠️ ธาตุที่ขาดหาย (Missing Elements)</h3>`;
-    if(missingElements.length > 0) {
-        html += `<p style="font-size:13px; color:#666;">ในดวงกำเนิดของคุณไม่มีธาตุเหล่านี้ (แม้แต่ในราศีแฝง) ซึ่งส่งผลต่อจุดอ่อนในนิสัย:</p>
-                 <ul style="margin:0; padding-left:20px;">${missingElements.join('')}</ul>`;
-    } else {
-        html += `<p>ยินดีด้วยครับ! ดวงของคุณมีธาตุทั้ง 5 ครบถ้วน (เบญจธาตุสมดุล) ทำให้คุณเป็นคนที่มีความสมบูรณ์ในแง่ของจิตวิญญาณและการใช้ชีวิต</p>`;
-    }
+    html += `<div class="encyc-section"><h3 class="encyc-title">⚠️ ธาตุที่ขาดหาย (Missing Elements)</h3>`;
+    if(missingElements.length > 0) { html += `<ul style="margin:0; padding-left:20px;">${missingElements.join('')}</ul>`; } 
+    else { html += `<p>ยินดีด้วยครับ! ดวงของคุณมีธาตุทั้ง 5 ครบถ้วน (เบญจธาตุสมดุล)</p>`; }
     html += `</div></div>`;
 
-    // --- TAB 2: 10 เทพ ---
     html += `<div id="tab-gods" class="tab-content" style="display:none;">`;
     let godsInChart = new Set();
-    ['year', 'month', 'hour'].forEach(p => {
-        let gan = currentBaZiData[p].gan;
-        let tenGodCh = tenGodsMap[dmGan][gan];
-        if(tenGodCh) godsInChart.add(shiShenMap[tenGodCh] || tenGodCh);
-    });
-
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">☯️ สิบเทพในราศีบน (10 Gods)</h3>
-                <p style="font-size:13px; color:#666;">โครงสร้างพลังงานที่หล่อหลอมรูปแบบชีวิตและการงานของคุณ (สิ่งที่คนอื่นมองเห็น):</p>`;
-    if (godsInChart.size > 0) {
-        godsInChart.forEach(god => {
-            let desc = shiShenDesc[god] || '';
-            html += `<div class="encyc-item"><b>[${god}]</b><br>${desc.replace(/\n/g, '<br>')}</div>`;
-        });
-    } else {
-        html += `<p>ไม่พบสิบเทพที่เด่นชัดในราศีบน</p>`;
-    }
+    ['year', 'month', 'hour'].forEach(p => { let gan = currentBaZiData[p].gan; let tenGodCh = tenGodsMap[dmGan][gan]; if(tenGodCh) godsInChart.add(shiShenMap[tenGodCh] || tenGodCh); });
+    html += `<div class="encyc-section"><h3 class="encyc-title">☯️ สิบเทพในราศีบน (10 Gods)</h3>`;
+    if (godsInChart.size > 0) { godsInChart.forEach(god => { let desc = shiShenDesc[god] || ''; html += `<div class="encyc-item"><b>[${god}]</b><br>${desc.replace(/\n/g, '<br>')}</div>`; }); } 
+    else { html += `<p>ไม่พบสิบเทพที่เด่นชัดในราศีบน</p>`; }
     html += `</div></div>`;
 
-    // --- TAB 3: ดาวพิเศษ / คลัง / คงบ้วง ---
     html += `<div id="tab-stars" class="tab-content" style="display:none;">`;
-    
-    // คลัง
     let foundVaults = [];
     ['year', 'month', 'day', 'hour'].forEach(p => {
         let zhi = currentBaZiData[p].zhi;
@@ -714,99 +727,58 @@ function openEncyclopedia() {
         if(zhi === currentVaults.powerVault) foundVaults.push(`🏛️ <b>กัวโข่ว (คลังอำนาจ)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีวาสนาบารมีซ่อนอยู่ เป็นผู้นำลับๆ`);
         if(zhi === currentVaults.resourceVault) foundVaults.push(`📚 <b>อิ่งโข่ว (คลังอุปถัมภ์)</b> อยู่ที่ เสา${pillarNamesTh[p]}: มีปัญญาและผู้ใหญ่หนุนหลังแบบคาดไม่ถึง`);
     });
-
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">🔐 คลังขุมทรัพย์ (The Vaults)</h3>`;
-    if (foundVaults.length > 0) {
-        foundVaults.forEach(v => { html += `<div class="encyc-item">${v}</div>`; });
-    } else {
-        html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง (เงินหรือโอกาสเข้ามารวดเร็วและผ่านไปเร็ว ต้องอาศัยการออมด้วยตัวเอง)</p>
-                 <p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`;
-    }
+    html += `<div class="encyc-section"><h3 class="encyc-title">🔐 คลังขุมทรัพย์ (The Vaults)</h3>`;
+    if (foundVaults.length > 0) { foundVaults.forEach(v => { html += `<div class="encyc-item">${v}</div>`; }); } 
+    else { html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง</p><p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`; }
     html += `</div>`;
 
-    // คงบ้วง
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">🕳️ ดาวคงบ้วง (ตำแหน่งสูญสิ้น)</h3>
-                <p>นักษัตรคงบ้วงของคุณคือ: <b>${currentKongWang}</b></p>
-                <p style="font-size:13.5px;">หากนักษัตรเหล่านี้ปรากฏในดวง หรือวิ่งเข้ามาในปีจร จะทำให้พลังงานเรื่องนั้นว่างเปล่า หรือต้องเหนื่อยกว่าปกติถึงจะได้มา</p>
-             </div>`;
-    html += `</div>`;
+    html += `<div class="encyc-section"><h3 class="encyc-title">🕳️ ดาวคงบ้วง (ตำแหน่งสูญสิ้น)</h3><p>นักษัตรคงบ้วงของคุณคือ: <b>${currentKongWang}</b></p></div></div>`;
 
-    // --- TAB 4: ปฏิสัมพันธ์ (ชง ฮะ) ---
     html += `<div id="tab-interact" class="tab-content" style="display:none;">`;
-    let internalClashes = [];
-    const pillars = ['year', 'month', 'day', 'hour'];
+    let internalClashes = []; const pillars = ['year', 'month', 'day', 'hour'];
     for(let i=0; i<pillars.length; i++) {
         for(let j=i+1; j<pillars.length; j++) {
-            let p1 = pillars[i]; let p2 = pillars[j];
-            let zhi1 = currentBaZiData[p1].zhi; let zhi2 = currentBaZiData[p2].zhi;
-            
-            if(interactions.earthlyClashes[zhi1] === zhi2) internalClashes.push(`💥 <b>ชง (ปะทะ):</b> เสา${pillarNamesTh[p1]} ชง เสา${pillarNamesTh[p2]} (มักมีการเปลี่ยนแปลง แตกหัก หรือชีพจรลงเท้า)`);
-            if(interactions.earthlyCombos[zhi1] === zhi2) internalClashes.push(`🤝 <b>ฮะ (ผูกพัน):</b> เสา${pillarNamesTh[p1]} ฮะ เสา${pillarNamesTh[p2]} (มีความรักใคร่ ผูกพัน และช่วยเหลือกันเหนียวแน่น)`);
+            let p1 = pillars[i]; let p2 = pillars[j]; let zhi1 = currentBaZiData[p1].zhi; let zhi2 = currentBaZiData[p2].zhi;
+            if(interactions.earthlyClashes[zhi1] === zhi2) internalClashes.push(`💥 <b>ชง (ปะทะ):</b> เสา${pillarNamesTh[p1]} ชง เสา${pillarNamesTh[p2]} (มีการเปลี่ยนแปลง แตกหัก หรือชีพจรลงเท้า)`);
+            if(interactions.earthlyCombos[zhi1] === zhi2) internalClashes.push(`🤝 <b>ฮะ (ผูกพัน):</b> เสา${pillarNamesTh[p1]} ฮะ เสา${pillarNamesTh[p2]} (มีความรักใคร่ ผูกพัน และช่วยเหลือกัน)`);
             if(interactions.earthlyPunishments[zhi1] && interactions.earthlyPunishments[zhi1].includes(zhi2)) internalClashes.push(`⚠️ <b>เฮ้ง (เบียดเบียน):</b> เสา${pillarNamesTh[p1]} เฮ้ง เสา${pillarNamesTh[p2]} (มักเกิดความอึดอัดใจ วุ่นวาย หรือกดดัน)`);
             if(interactions.earthlyHarms[zhi1] === zhi2) internalClashes.push(`⚡ <b>ไห่ (ให้ร้าย):</b> เสา${pillarNamesTh[p1]} ไห่ เสา${pillarNamesTh[p2]} (ระวังการถูกเอาเปรียบ หรือปัญหาสุขภาพ)`);
             if(interactions.earthlyDestructions[zhi1] === zhi2) internalClashes.push(`🔨 <b>ผั่ว (แตกหัก):</b> เสา${pillarNamesTh[p1]} ผั่ว เสา${pillarNamesTh[p2]} (สิ่งที่สร้างไว้มักมีเหตุให้ต้องสร้างใหม่)`);
         }
     }
-
-    html += `<div class="encyc-section">
-                <h3 class="encyc-title">⚡ ปฏิสัมพันธ์ในพื้นดวงกำเนิด (ชง ฮะ เฮ้ง)</h3>
-                <p style="font-size:13px; color:#666;">โชคชะตาที่ถูกสลักไว้ตั้งแต่เกิด (ความขัดแย้ง/ผูกพันในตัวเอง):</p>`;
-    if (internalClashes.length > 0) {
-        internalClashes.forEach(clash => { html += `<div class="encyc-item">${clash}</div>`; });
-    } else {
-        html += `<p>พื้นดวงสงบนิ่ง ไม่มีปฏิกิริยาปะทะหรือผูกพันที่รุนแรง</p>`;
-    }
+    html += `<div class="encyc-section"><h3 class="encyc-title">⚡ ปฏิสัมพันธ์ในพื้นดวงกำเนิด (ชง ฮะ เฮ้ง)</h3>`;
+    if (internalClashes.length > 0) { internalClashes.forEach(clash => { html += `<div class="encyc-item">${clash}</div>`; }); } 
+    else { html += `<p>พื้นดวงสงบนิ่ง ไม่มีปฏิกิริยาปะทะหรือผูกพันที่รุนแรง</p>`; }
     html += `</div></div>`;
 
     document.getElementById('encyclopedia-detail').innerHTML = html;
     document.getElementById('encyclopedia-modal').style.display = "flex";
-    
-    // ตั้งค่าหน้าแรกให้เป็น Tab 1 เสมอ
-    openEncycTab(null, 'tab-basic');
-    document.querySelector('.tab-link').classList.add('active');
+    openEncycTab(null, 'tab-basic'); document.querySelector('.tab-link').classList.add('active');
 }
 function closeEncyclopedia() { document.getElementById('encyclopedia-modal').style.display = "none"; }
 
-// 🌟 ฟังก์ชันใหม่: เปิดพจนานุกรมปาจื้อ 🌟
 function openGlossary() {
     let html = `<div class="encyc-section"><h3 class="encyc-title">☯️ สิบเทพ (10 Gods)</h3>`;
     for(let key in shiShenDesc) { html += `<div class="encyc-item"><b>${key}:</b><br>${shiShenDesc[key].replace(/\n/g, '<br>')}</div>`; }
-    html += `</div>`;
-
-    html += `<div class="encyc-section"><h3 class="encyc-title">⏳ 12 วัฏจักร (12 Growth Phases)</h3>`;
+    html += `</div><div class="encyc-section"><h3 class="encyc-title">⏳ 12 วัฏจักร (12 Growth Phases)</h3>`;
     for(let key in diShiDesc) { html += `<div class="encyc-item"><b>${diShiDesc[key].th} (${key}):</b> ${diShiDesc[key].desc}</div>`; }
-    html += `</div>`;
-
-    html += `<div class="encyc-section"><h3 class="encyc-title">⚡ ปฏิสัมพันธ์ (Interactions)</h3>
+    html += `</div><div class="encyc-section"><h3 class="encyc-title">⚡ ปฏิสัมพันธ์ (Interactions)</h3>
                 <div class="encyc-item"><b>ฮะ (ภาคี):</b> รวมตัว, ผูกพัน, ราบรื่น, ได้รับความช่วยเหลือ</div>
                 <div class="encyc-item"><b>ชง (ปะทะ):</b> ขัดแย้ง, เปลี่ยนแปลงกะทันหัน, อุบัติเหตุ, เคลื่อนที่</div>
                 <div class="encyc-item"><b>เฮ้ง (เบียดเบียน):</b> อึดอัดใจ, วุ่นวาย, กดดัน, คดีความ</div>
                 <div class="encyc-item"><b>ไห่ (ให้ร้าย):</b> ถูกแทงข้างหลัง, นินทา, ปัญหาสุขภาพซ่อนเร้น</div>
-                <div class="encyc-item"><b>ผั่ว (แตกหัก):</b> เสียหาย, พังทลาย, ต้องเริ่มต้นใหม่</div>
-             </div>`;
-
-    document.getElementById('glossary-detail').innerHTML = html;
-    document.getElementById('glossary-modal').style.display = "flex";
+                <div class="encyc-item"><b>ผั่ว (แตกหัก):</b> เสียหาย, พังทลาย, ต้องเริ่มต้นใหม่</div></div>`;
+    document.getElementById('glossary-detail').innerHTML = html; document.getElementById('glossary-modal').style.display = "flex";
 }
 function closeGlossary() { document.getElementById('glossary-modal').style.display = "none"; }
 
-// AI Functions (คงเดิม)
 function getDailyHoroscope() {
-    const btn = document.getElementById('ai-daily-btn');
-    const resultBox = document.getElementById('ai-result-box');
-    const aiContent = document.getElementById('ai-content');
-    renderCurrentTimeBaZi();
-    const name = document.getElementById('name').value || "ไม่ระบุ";
-    const cacheKey = `daily_cache_${name}_${new Date().toISOString().split('T')[0]}`;
+    const btn = document.getElementById('ai-daily-btn'); const resultBox = document.getElementById('ai-result-box'); const aiContent = document.getElementById('ai-content');
+    renderCurrentTimeBaZi(); const name = document.getElementById('name').value || "ไม่ระบุ"; const cacheKey = `daily_cache_${name}_${new Date().toISOString().split('T')[0]}`;
     if (localStorage.getItem(cacheKey)) { resultBox.style.display = "block"; aiContent.innerHTML = localStorage.getItem(cacheKey); return; }
-    btn.innerText = "⏳ สับติ้วเซียมซี..."; btn.disabled = true;
-    resultBox.style.display = "block"; aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์พลังงานในวันนี้เทียบกับดวงเกิดของคุณ... ⏳</div>`;
-    const payload = { action: "daily", personal_info: { name: name }, bazi_results: currentBaZiData, current_time: currentTimeData };
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()).then(data => {
-        if (data.result === "success") { localStorage.setItem(cacheKey, data.analysis); aiContent.innerHTML = data.analysis; }
-        else aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
+    btn.innerText = "⏳ สับติ้วเซียมซี..."; btn.disabled = true; resultBox.style.display = "block"; aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์พลังงานในวันนี้เทียบกับดวงเกิดของคุณ... ⏳</div>`;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "daily", personal_info: { name: name }, bazi_results: currentBaZiData, current_time: currentTimeData }) }).then(r => r.json()).then(data => {
+        if (data.result === "success") { localStorage.setItem(cacheKey, data.analysis); aiContent.innerHTML = data.analysis; } else aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด</p>`;
         btn.innerText = "🥠 เซียมซีทำนายรายวัน"; btn.disabled = false;
     }).catch(e => { aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`; btn.innerText = "🥠 เซียมซีทำนายรายวัน"; btn.disabled = false; });
 }
@@ -819,11 +791,10 @@ function calculateSynastry() {
     const [y, m, d] = pDate.split('-'); const [h, min] = pTime.split(':');
     const bazi = Solar.fromYmdHms(parseInt(y), parseInt(m), parseInt(d), parseInt(h), parseInt(min), 0).getLunar().getEightChar(); 
     partnerBaZiData = { name: document.getElementById('partner_name').value || "พาร์ทเนอร์", gender: document.getElementById('partner_gender').value, year: { gan: bazi.getYearGan(), zhi: bazi.getYearZhi() }, month: { gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi() }, day: { gan: bazi.getDayGan(), zhi: bazi.getDayZhi() }, hour: { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() } };
-    closeSynastryModal();
-    const btn = document.getElementById('ai-synastry-btn'); document.getElementById('ai-result-box').style.display = "block";
+    closeSynastryModal(); const btn = document.getElementById('ai-synastry-btn'); document.getElementById('ai-result-box').style.display = "block";
     document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังทาบดวงชะตาเพื่อหาจุดสมพงษ์... ⏳</div>`; btn.disabled = true;
     fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "synastry", my_bazi: currentBaZiData, my_name: document.getElementById('name').value, partner_bazi: partnerBaZiData }) }).then(r => r.json()).then(data => {
-        document.getElementById('ai-content').innerHTML = data.result === "success" ? data.analysis : `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`; btn.disabled = false; btn.innerText = "💞 เทียบดวงสมพงษ์";
+        document.getElementById('ai-content').innerHTML = data.result === "success" ? data.analysis : `<p style="color:red;">เกิดข้อผิดพลาด</p>`; btn.disabled = false; btn.innerText = "💞 เทียบดวงสมพงษ์";
     });
 }
 
@@ -834,7 +805,7 @@ function analyzeWithAI(forceRefresh = false) {
     if (!forceRefresh && localStorage.getItem(cacheKey)) { document.getElementById('ai-result-box').style.display = "block"; aiContent.innerHTML = localStorage.getItem(cacheKey) + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`; return; }
     btn.innerText = "⏳ ซินแสกำลังประมวลผล..."; btn.disabled = true; document.getElementById('ai-result-box').style.display = "block";
     aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
-    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "analyze", personal_info: { name: name, gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value }, bazi_results: currentBaZiData, dm_strength: dmStrengthData, da_yun: activeDaYunData, liu_nian: activeLiuNianData, custom_question: document.getElementById('ai-custom-question').value.trim() }) }).then(r => r.json()).then(data => {
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "analyze", personal_info: { name: name, gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value }, bazi_results: currentBaZiData, dm_strength: dmStrengthData, da_yun: activeDaYunData, liu_nian: activeLiuNianData, custom_question: document.getElementById('ai-custom-question').value.trim(), kong_wang: currentKongWang, vaults: currentVaults, element_counts: elementCounts }) }).then(r => r.json()).then(data => {
         if (data.result === "success") { localStorage.setItem(cacheKey, data.analysis); aiContent.innerHTML = data.analysis + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`; } 
         else aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด</p>`; btn.innerText = "✨ ซินแสวิเคราะห์ดวงชะตา"; btn.disabled = false;
     });

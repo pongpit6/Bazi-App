@@ -246,6 +246,7 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
     }
 }
 
+// 🌟 อัปเดตฟังก์ชัน Tooltip ให้แสดงธาตุและบอกความหมายอิมเจีย 🌟
 function updateShiShenLabels(dataObj, prefix, dayGan) {
     if(!dayGan) return;
     ['year', 'month', 'day', 'hour'].forEach(p => {
@@ -272,8 +273,10 @@ function updateShiShenLabels(dataObj, prefix, dayGan) {
         }
         if (naYinEl && dataObj[p].naYin) {
             let nayinName = dataObj[p].naYin;
+            // สกัดธาตุจากชื่อจีน
             let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'น้ำ' : nayinName.includes('火') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
-            naYinEl.innerHTML = `อิมเจีย: ${nyElement}<span class="tooltip-text"><b>พลังธาตุเสียง (Na Yin)</b><br>${nayinName}</span>`;
+            // เพิ่มคำอธิบายอิมเจียลงใน Tooltip
+            naYinEl.innerHTML = `อิมเจีย: ${nyElement}<span class="tooltip-text" style="width:250px;"><b>🎶 อิมเจีย: ${nayinName} (ธาตุ${nyElement})</b><br>พลังธาตุแฝง (เสียง) บ่งบอกถึง "นิสัยเบื้องลึก อารมณ์ซ่อนเร้น หรือบรรยากาศแวดล้อมที่แท้จริง" ของเสานี้</span>`;
         }
     });
 }
@@ -423,6 +426,7 @@ function getAdviceText(type, context) {
     return "";
 }
 
+// 🌟 อัปเดต Pop-up ให้บอกความหมายของอิมเจียชัดเจน 🌟
 function showPopup(titleName, elementId, type) {
     const [pillar, level] = elementId.split('-');
     const sourceData = type === 'natal' ? currentBaZiData : currentTimeData;
@@ -450,7 +454,9 @@ function showPopup(titleName, elementId, type) {
         htmlContent += `<p style="margin-bottom:5px;">⏳ <b>12 วัฏจักร (พลังงาน):</b> ${dsData.th} (${pillarData.diShi})<br><span style="color:#555; font-size:12.5px;">-> ${dsData.desc}</span></p>`;
     }
     if (pillarData.naYin) {
-        htmlContent += `<p style="margin-bottom:5px;">🎶 <b>อิมเจีย (ธาตุเสียง):</b> ${pillarData.naYin}</p>`;
+        let nayinName = pillarData.naYin;
+        let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'น้ำ' : nayinName.includes('火') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
+        htmlContent += `<p style="margin-bottom:5px;">🎶 <b>อิมเจีย (ธาตุเสียง):</b> ${nayinName} (ธาตุ${nyElement})<br><span style="color:#555; font-size:12.5px;">-> พลังธาตุแฝงที่ผสมจากราศีบน-ล่าง ใช้ดู "นิสัยเบื้องลึก อารมณ์ซ่อนเร้น หรือบรรยากาศที่แท้จริง" ของเสานี้</span></p>`;
     }
     
     if (level === 'earth' && currentKongWang.includes(char)) {
@@ -836,7 +842,6 @@ function openEncyclopedia() {
 }
 function closeEncyclopedia() { document.getElementById('encyclopedia-modal').style.display = "none"; }
 
-// 🌟 ฟังก์ชันจัดการ Tabs พจนานุกรมปาจื้อ 🌟
 function openGlosTab(evt, tabName) {
     let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content-glos");
@@ -853,7 +858,6 @@ function openGlosTab(evt, tabName) {
     if(evt) evt.currentTarget.className += " active";
 }
 
-// 🌟 พจนานุกรมฉบับสมบูรณ์ (แบ่งแท็บให้สวยงาม) 🌟
 function openGlossary() {
     let html = '';
 
@@ -868,7 +872,6 @@ function openGlossary() {
 
     // --- TAB 2: ราศีบน (ภาคีฟ้า) ---
     html += `<div id="glos-stems" class="tab-content-glos" style="display:none;">`;
-    
     html += `<div class="glos-section"><h3 class="glos-title">☁️ ภาคีฟ้า (Heavenly Combos)</h3>
              <p style="font-size:13.5px;">การรวมตัวของราศีบน 2 ธาตุ กลายเป็นธาตุใหม่ (แสดงถึงความปรองดอง)</p>
              <table class="glos-table">
@@ -892,7 +895,6 @@ function openGlossary() {
 
     // --- TAB 3: ราศีล่าง (กิ่งดิน) ---
     html += `<div id="glos-branches" class="tab-content-glos" style="display:none;">`;
-    
     html += `<div class="glos-section"><h3 class="glos-title">🤝 ลักฮะ (ภาคี 6 กิ่งดิน)</h3>
              <p style="font-size:13.5px;">การจับคู่ที่เหนียวแน่นที่สุด (เหมือนสามีภรรยา)</p>
              <table class="glos-table">
@@ -916,7 +918,7 @@ function openGlossary() {
 
     html += `<div class="glos-section"><h3 class="glos-title">⚡ การปะทะ (ชง เฮ้ง ไห่ ผั่ว)</h3>
              <p style="font-size:13.5px; margin-bottom:5px;"><b>💥 ชง (ปะทะรุนแรง แตกหัก โยกย้าย):</b><br> 子-午, 丑-未, 寅-申, 卯-酉, 辰-戌, 巳-亥</p>
-             <p style="font-size:13.5px; margin-bottom:5px;"><b>⚠️ เฮ้ง (เบียดเบียน คดีความ อึดอัดใจ):</b><br> - เนรคุณ: 寅, 巳, 申<br> - ข่มขู่: 丑, 戌, 未<br> - ไร้มารยาท: 子, 卯<br> - ทำร้ายตัวเอง: 辰, 午, 酉, 亥 (เมื่อเจอตัวมันเองซ้ำ)</p>
+             <p style="font-size:13.5px; margin-bottom:5px;"><b>⚠️ เฮ้ง (เบียดเบียน คดีความ อึดอัดใจ):</b><br> - เนรคุณ: 寅, 巳, 申<br> - ข่มขู่: 丑, 戌, 未<br> - ไร้มารยาท: 子, 卯<br> - ทำร้ายตัวเอง: 辰, 午, 酉, 亥 (เจอตัวมันเองซ้ำ)</p>
              <p style="font-size:13.5px; margin-bottom:5px;"><b>🗡️ ไห่ (ให้ร้าย แทงข้างหลัง):</b><br> 子-未, 丑-午, 寅-巳, 卯-辰, 申-亥, 酉-戌</p>
              <p style="font-size:13.5px;"><b>🔨 ผั่ว (แตกหัก เสียหาย เริ่มใหม่):</b><br> 子-酉, 丑-辰, 寅-亥, 卯-午, 巳-申, 未-戌</p>
              </div>`;
@@ -970,13 +972,11 @@ function openGlossary() {
     document.getElementById('glossary-detail').innerHTML = html; 
     document.getElementById('glossary-modal').style.display = "flex";
     
-    // รีเซ็ตหน้าแรก
     openGlosTab(null, 'glos-gods');
     document.querySelector('.tab-link-glos').classList.add('active');
 }
 function closeGlossary() { document.getElementById('glossary-modal').style.display = "none"; }
 
-// ... โค้ด AI / Save Sheets ด้านล่างคงเดิม ...
 function getDailyHoroscope() {
     const btn = document.getElementById('ai-daily-btn'); 
     const resultBox = document.getElementById('ai-result-box'); 

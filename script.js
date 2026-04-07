@@ -3,7 +3,7 @@ let currentBaZiData = {};
 let currentTimeData = {}; 
 let activeDaYunData = {}; 
 let activeLiuNianData = {}; 
-let dmStrengthData = {}; // 🌟 ตัวแปรใหม่สำหรับเก็บค่าความแข็งแรงดิถีส่งให้ AI 🌟
+let dmStrengthData = {}; 
 let savedRecordsList = [];
 
 const elementMap = {
@@ -30,6 +30,20 @@ const shiShenMap = {
     '比肩': 'ผี่เจียง (เพื่อน)', '劫财': 'เกียบไช้ (แย่งชิง)', '食神': 'เจียะซิ้ง (ผลงาน)', '伤官': 'ซังกัว (แสดงออก)',
     '偏财': 'เพียงไช้ (ลาภลอย)', '正财': 'เจี้ยไช้ (โชคลาภ)', '七杀': 'ชิกสัวะ (อำนาจ)', '正官': 'เจี้ยกัว (ขุนนาง)',
     '偏印': 'เพียงอิ่ง (อุปถัมภ์รอง)', '正印': 'เจี้ยอิ่ง (อุปถัมภ์หลัก)'
+};
+
+// 🌟 ตารางคำนวณสิบเทพ (10 Gods Mapping) [แถว = ดิถี (วัน), คอลัมน์ = ราศีบนเป้าหมาย] 🌟
+const tenGodsMap = {
+    '甲': {'甲':'比肩', '乙':'劫财', '丙':'食神', '丁':'伤官', '戊':'偏财', '己':'正财', '庚':'七杀', '辛':'正官', '壬':'偏印', '癸':'正印'},
+    '乙': {'甲':'劫财', '乙':'比肩', '丙':'伤官', '丁':'食神', '戊':'正财', '己':'偏财', '庚':'正官', '辛':'七杀', '壬':'正印', '癸':'偏印'},
+    '丙': {'甲':'偏印', '乙':'正印', '丙':'比肩', '丁':'劫财', '戊':'食神', '己':'伤官', '庚':'偏财', '辛':'正财', '壬':'七杀', '癸':'正官'},
+    '丁': {'甲':'正印', '乙':'偏印', '丙':'劫财', '丁':'比肩', '戊':'伤官', '己':'食神', '庚':'正财', '辛':'偏财', '壬':'正官', '癸':'七杀'},
+    '戊': {'甲':'七杀', '乙':'正官', '丙':'偏印', '丁':'正印', '戊':'比肩', '己':'劫财', '庚':'食神', '辛':'伤官', '壬':'偏财', '癸':'正财'},
+    '己': {'甲':'正官', '乙':'七杀', '丙':'正印', '丁':'偏印', '戊':'劫财', '己':'比肩', '庚':'伤官', '辛':'食神', '壬':'正财', '癸':'偏财'},
+    '庚': {'甲':'偏财', '乙':'正财', '丙':'七杀', '丁':'正官', '戊':'偏印', '己':'正印', '庚':'比肩', '辛':'劫财', '壬':'食神', '癸':'伤官'},
+    '辛': {'甲':'正财', '乙':'偏财', '丙':'正官', '丁':'七杀', '戊':'正印', '己':'偏印', '庚':'劫财', '辛':'比肩', '壬':'伤官', '癸':'食神'},
+    '壬': {'甲':'食神', '乙':'伤官', '丙':'偏财', '丁':'正财', '戊':'七杀', '己':'正官', '庚':'偏印', '辛':'正印', '壬':'比肩', '癸':'劫财'},
+    '癸': {'甲':'伤官', '乙':'食神', '丙':'正财', '丁':'偏财', '戊':'正官', '己':'七杀', '庚':'正印', '辛':'偏印', '壬':'劫财', '癸':'比肩'}
 };
 
 const pillarContextMap = { 'year': 'เสาปี', 'month': 'เสาเดือน', 'day': 'เสาวัน', 'hour': 'เสายาม' };
@@ -130,7 +144,6 @@ function calculateDMStrength() {
     let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
     let supportingTh = `${thTypeMap[supportType]}, ${thTypeMap[dmType]}`;
 
-    // 🌟 จัดเก็บข้อมูลความแข็งแรงดิถีลงตัวแปร Global เพื่อเตรียมส่งให้ AI 🌟
     dmStrengthData = {
         score: score,
         status: score >= 50 ? "แข็งแรง (Strong)" : "อ่อนแอ (Weak)",
@@ -249,23 +262,42 @@ function calculateBaZi() {
     calculateDMStrength(); 
     renderLuck(solar, genderInput === 'ชาย' ? 1 : 0);
 
+    // รีเซ็ตปุ่ม AI เมื่อกดผูกดวงใหม่
+    document.getElementById('ai-btn').innerText = "✨ ให้ AI ซินแส (Gemini) วิเคราะห์ดวงชะตานี้แบบเจาะลึก";
+    document.getElementById('ai-result-box').style.display = "none";
+
     document.getElementById('natal-bazi-section').style.display = "block";
     document.getElementById('luck-sections').style.display = "block";
     document.getElementById('ai-btn').style.display = "block";
     document.getElementById('save-btn').style.display = "block";
 }
 
+// 🌟 อัปเกรดฟังก์ชัน Render Luck เพื่อแสดงสิบเทพ 🌟
 function renderLuck(solar, genderNum) {
     const bazi = solar.getLunar().getEightChar();
     const yun = bazi.getYun(genderNum);
     const daYunList = yun.getDaYun();
+    const dayGan = currentBaZiData.day.gan; // ดึงราศีบนของวันเกิด (ดิถี)
     
     const daYunContainer = document.getElementById('da-yun-list');
     daYunContainer.innerHTML = '';
     daYunList.forEach(dy => {
         const gan = dy.getGanZhi().charAt(0); const zhi = dy.getGanZhi().charAt(1);
         const interactionHtml = getInteractionHTML(gan, zhi); 
-        daYunContainer.innerHTML += `<div class="luck-pillar"><div class="age-label">อายุ ${dy.getStartAge()}</div><div class="box ${elementMap[gan]?.type}">${getBoxInnerHtml(gan)}</div><div class="box ${elementMap[zhi]?.type}">${getBoxInnerHtml(zhi)}</div><div class="year-label">${dy.getStartYear()}</div>${interactionHtml}</div>`;
+        
+        // คำนวณสิบเทพเทียบกับดิถี
+        let tenGodCh = tenGodsMap[dayGan][gan];
+        let tenGodTh = shiShenMap[tenGodCh] ? shiShenMap[tenGodCh].split(' ')[0] : tenGodCh;
+
+        daYunContainer.innerHTML += `
+            <div class="luck-pillar">
+                <div class="age-label">อายุ ${dy.getStartAge()}</div>
+                <div class="luck-shishen">${tenGodTh}</div>
+                <div class="box ${elementMap[gan]?.type}">${getBoxInnerHtml(gan)}</div>
+                <div class="box ${elementMap[zhi]?.type}">${getBoxInnerHtml(zhi)}</div>
+                <div class="year-label">${dy.getStartYear()}</div>
+                ${interactionHtml}
+            </div>`;
     });
 
     const currentYear = new Date().getFullYear();
@@ -276,7 +308,20 @@ function renderLuck(solar, genderNum) {
         const lYear = Solar.fromYmd(tYear, 6, 1).getLunar();
         const yGan = lYear.getYearGan(); const yZhi = lYear.getYearZhi();
         const interactionHtml = getInteractionHTML(yGan, yZhi); 
-        liuNianContainer.innerHTML += `<div class="luck-pillar"><div class="age-label">${tYear}</div><div class="box ${elementMap[yGan]?.type}">${getBoxInnerHtml(yGan)}</div><div class="box ${elementMap[yZhi]?.type}">${getBoxInnerHtml(yZhi)}</div><div class="year-label">ปี${lYear.getYearShengXiao()}</div>${interactionHtml}</div>`;
+        
+        // คำนวณสิบเทพเทียบกับดิถี
+        let tenGodCh = tenGodsMap[dayGan][yGan];
+        let tenGodTh = shiShenMap[tenGodCh] ? shiShenMap[tenGodCh].split(' ')[0] : tenGodCh;
+
+        liuNianContainer.innerHTML += `
+            <div class="luck-pillar">
+                <div class="age-label">${tYear}</div>
+                <div class="luck-shishen">${tenGodTh}</div>
+                <div class="box ${elementMap[yGan]?.type}">${getBoxInnerHtml(yGan)}</div>
+                <div class="box ${elementMap[yZhi]?.type}">${getBoxInnerHtml(yZhi)}</div>
+                <div class="year-label">ปี${lYear.getYearShengXiao()}</div>
+                ${interactionHtml}
+            </div>`;
     }
 }
 
@@ -390,20 +435,39 @@ function showPopup(titleName, elementId, type) {
 
 function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
 
-function analyzeWithAI() {
+// 🌟 อัปเกรดฟังก์ชัน AI ด้วยระบบ LocalStorage Cache 🌟
+function analyzeWithAI(forceRefresh = false) {
+    const name = document.getElementById('name').value || "ไม่ระบุ";
+    const gender = document.getElementById('gender').value;
+    const bDate = document.getElementById('birth_date').value;
+    const bTime = document.getElementById('birth_time').value;
+    
+    // สร้างกุญแจ (Key) สำหรับจำค่าใน Cache
+    const cacheKey = `ai_cache_${name}_${bDate}_${bTime}`;
+
     const btn = document.getElementById('ai-btn');
     const resultBox = document.getElementById('ai-result-box');
     const aiContent = document.getElementById('ai-content');
 
-    btn.innerText = "✨ ซินแส Gemini กำลังผูกดวงและประมวลผล... (อาจใช้เวลา 10-20 วินาที)";
+    // ตรวจสอบ Cache ถ้าไม่อยากบังคับ Refresh และมีข้อมูลอยู่แล้ว ให้ดึงมาแสดงทันที
+    if (!forceRefresh) {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+            resultBox.style.display = "block";
+            aiContent.innerHTML = cachedData + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่จาก AI (Refresh)</button></div>`;
+            btn.innerText = "✨ ดึงคำทำนายจากความจำสำเร็จ (อ่านด้านล่าง)";
+            return;
+        }
+    }
+
+    btn.innerText = "✨ ซินแส Gemini กำลังผูกดวงและประมวลผล... (รอสักครู่)";
     btn.disabled = true;
     resultBox.style.display = "block";
     aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
 
-    // 🌟 แนบข้อมูลความแข็งแรงดิถี วัยจร และปีจร ไปใน Payload ด้วย 🌟
     const payload = {
         action: "analyze",
-        personal_info: { name: document.getElementById('name').value || "ไม่ระบุ", gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value },
+        personal_info: { name: name, gender: gender, birth_date: bDate, birth_time: bTime },
         bazi_results: currentBaZiData,
         dm_strength: dmStrengthData,
         da_yun: activeDaYunData,
@@ -414,7 +478,10 @@ function analyzeWithAI() {
     .then(response => response.json())
     .then(data => {
         if (data.result === "success") {
-            aiContent.innerHTML = data.analysis;
+            // บันทึกคำทำนายที่ได้ลง LocalStorage
+            localStorage.setItem(cacheKey, data.analysis);
+            
+            aiContent.innerHTML = data.analysis + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่จาก AI (Refresh)</button></div>`;
             btn.innerText = "✨ วิเคราะห์เสร็จสิ้น (คลิกเพื่อวิเคราะห์ใหม่)";
         } else {
             aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;

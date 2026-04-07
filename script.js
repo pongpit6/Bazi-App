@@ -800,7 +800,8 @@ function openEncyclopedia() {
     if (foundVaults.length > 0) { 
         foundVaults.forEach(v => { html += `<div class="encyc-item">${v}</div>`; }); 
     } else { 
-        html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง</p><p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`; 
+        html += `<p>ในดวงกำเนิดไม่มีตำแหน่งคลัง (เงินหรือโอกาสเข้ามารวดเร็วและผ่านไปเร็ว ต้องอาศัยการออมด้วยตัวเอง)</p>
+                 <p style="font-size:13px; color:#e65100;">*หมายเหตุ: คลังสมบัติของคุณคือธาตุ <b>${elementMap[currentVaults.wealthVault].thName} (${currentVaults.wealthVault})</b> รอจังหวะปีจรวิ่งเข้ามาเปิดคลังนะครับ!</p>`; 
     }
     html += `</div>`;
 
@@ -835,22 +836,147 @@ function openEncyclopedia() {
 }
 function closeEncyclopedia() { document.getElementById('encyclopedia-modal').style.display = "none"; }
 
+// 🌟 ฟังก์ชันจัดการ Tabs พจนานุกรมปาจื้อ 🌟
+function openGlosTab(evt, tabName) {
+    let i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content-glos");
+    for (i = 0; i < tabcontent.length; i++) { 
+        tabcontent[i].style.display = "none"; 
+        tabcontent[i].classList.remove("active"); 
+    }
+    tablinks = document.getElementsByClassName("tab-link-glos");
+    for (i = 0; i < tablinks.length; i++) { 
+        tablinks[i].className = tablinks[i].className.replace(" active", ""); 
+    }
+    document.getElementById(tabName).style.display = "block"; 
+    document.getElementById(tabName).classList.add("active");
+    if(evt) evt.currentTarget.className += " active";
+}
+
+// 🌟 พจนานุกรมฉบับสมบูรณ์ (แบ่งแท็บให้สวยงาม) 🌟
 function openGlossary() {
-    let html = `<div class="encyc-section"><h3 class="encyc-title">☯️ สิบเทพ (10 Gods)</h3>`;
-    for(let key in shiShenDesc) { html += `<div class="encyc-item"><b>${key}:</b><br>${shiShenDesc[key].replace(/\n/g, '<br>')}</div>`; }
-    html += `</div><div class="encyc-section"><h3 class="encyc-title">⏳ 12 วัฏจักร (12 Growth Phases)</h3>`;
+    let html = '';
+
+    // --- TAB 1: 10 เทพ ---
+    html += `<div id="glos-gods" class="tab-content-glos active">`;
+    html += `<div class="glos-section"><h3 class="glos-title">☯️ สิบเทพ (10 Gods)</h3>`;
+    html += `<p style="font-size:13.5px; color:#666;">ความสัมพันธ์ระหว่างธาตุของคุณ(ดิถี) กับธาตุอื่นๆ</p>`;
+    for(let key in shiShenDesc) { 
+        html += `<div class="encyc-item"><b>${key}:</b><br>${shiShenDesc[key].replace(/\n/g, '<br>')}</div>`; 
+    }
+    html += `</div></div>`;
+
+    // --- TAB 2: ราศีบน (ภาคีฟ้า) ---
+    html += `<div id="glos-stems" class="tab-content-glos" style="display:none;">`;
+    
+    html += `<div class="glos-section"><h3 class="glos-title">☁️ ภาคีฟ้า (Heavenly Combos)</h3>
+             <p style="font-size:13.5px;">การรวมตัวของราศีบน 2 ธาตุ กลายเป็นธาตุใหม่ (แสดงถึงความปรองดอง)</p>
+             <table class="glos-table">
+                <tr><th>คู่ภาคี</th><th>ผลลัพธ์ธาตุใหม่</th></tr>
+                <tr><td>甲 (ไม้หยาง) + 己 (ดินหยิน)</td><td>= <b>ธาตุดิน</b> (ความน่าเชื่อถือ)</td></tr>
+                <tr><td>乙 (ไม้หยิน) + 庚 (ทองหยาง)</td><td>= <b>ธาตุทอง</b> (ความยุติธรรม)</td></tr>
+                <tr><td>丙 (ไฟหยาง) + 辛 (ทองหยิน)</td><td>= <b>ธาตุน้ำ</b> (ปัญญาบารมี)</td></tr>
+                <tr><td>丁 (ไฟหยิน) + 壬 (น้ำหยาง)</td><td>= <b>ธาตุไม้</b> (ความเมตตา)</td></tr>
+                <tr><td>戊 (ดินหยาง) + 癸 (น้ำหยิน)</td><td>= <b>ธาตุไฟ</b> (ความไร้ปรานี/กฎเกณฑ์)</td></tr>
+             </table></div>`;
+
+    html += `<div class="glos-section"><h3 class="glos-title">⛈️ ฟ้าชง (Heavenly Clashes)</h3>
+             <p style="font-size:13.5px;">การปะทะกันของราศีบน (ความขัดแย้งที่แสดงออกภายนอกชัดเจน)</p>
+             <ul style="font-size:13.5px; line-height:1.8;">
+                <li><b>甲 (ไม้) ชง 庚 (ทอง):</b> ขัดแย้งเรื่องอุดมการณ์ ความคิดแตกหัก</li>
+                <li><b>乙 (ไม้) ชง 辛 (ทอง):</b> ถูกทำร้ายจิตใจ ทรยศหักหลัง</li>
+                <li><b>丙 (ไฟ) ชง 壬 (น้ำ):</b> ขัดแย้งรุนแรง ปะทะอารมณ์ซึ่งหน้า</li>
+                <li><b>丁 (ไฟ) ชง 癸 (น้ำ):</b> ปัญหาลับหลัง ชิงดีชิงเด่น</li>
+             </ul></div>`;
+    html += `</div>`;
+
+    // --- TAB 3: ราศีล่าง (กิ่งดิน) ---
+    html += `<div id="glos-branches" class="tab-content-glos" style="display:none;">`;
+    
+    html += `<div class="glos-section"><h3 class="glos-title">🤝 ลักฮะ (ภาคี 6 กิ่งดิน)</h3>
+             <p style="font-size:13.5px;">การจับคู่ที่เหนียวแน่นที่สุด (เหมือนสามีภรรยา)</p>
+             <table class="glos-table">
+                <tr><th>คู่ฮะ</th><th>ผลลัพธ์ธาตุ</th></tr>
+                <tr><td>子 (ชวด) + 丑 (ฉลู)</td><td>= ดิน</td></tr>
+                <tr><td>寅 (ขาล) + 亥 (กุน)</td><td>= ไม้</td></tr>
+                <tr><td>卯 (เถาะ) + 戌 (จอ)</td><td>= ไฟ</td></tr>
+                <tr><td>辰 (มะโรง) + 酉 (ระกา)</td><td>= ทอง</td></tr>
+                <tr><td>巳 (มะเส็ง) + 申 (วอก)</td><td>= น้ำ</td></tr>
+                <tr><td>午 (มะเมีย) + 未 (มะแม)</td><td>= ไฟ/ดิน</td></tr>
+             </table></div>`;
+
+    html += `<div class="glos-section"><h3 class="glos-title">🤝 ซาฮะ (ไตรภาคี)</h3>
+             <p style="font-size:13.5px;">การรวมตัวของ 3 นักษัตร สร้างพลังธาตุที่ยิ่งใหญ่ที่สุด</p>
+             <ul style="font-size:13.5px; line-height:1.8;">
+                <li><b>申(วอก) + 子(ชวด) + 辰(มะโรง):</b> รวมเป็น <b>ธาตุน้ำ</b> (ปัญญา/ไหลลื่น)</li>
+                <li><b>亥(กุน) + 卯(เถาะ) + 未(มะแม):</b> รวมเป็น <b>ธาตุไม้</b> (เมตตา/เติบโต)</li>
+                <li><b>寅(ขาล) + 午(มะเมีย) + 戌(จอ):</b> รวมเป็น <b>ธาตุไฟ</b> (รุ่งโรจน์/ชื่อเสียง)</li>
+                <li><b>巳(มะเส็ง) + 酉(ระกา) + 丑(ฉลู):</b> รวมเป็น <b>ธาตุทอง</b> (เด็ดขาด/ยุติธรรม)</li>
+             </ul></div>`;
+
+    html += `<div class="glos-section"><h3 class="glos-title">⚡ การปะทะ (ชง เฮ้ง ไห่ ผั่ว)</h3>
+             <p style="font-size:13.5px; margin-bottom:5px;"><b>💥 ชง (ปะทะรุนแรง แตกหัก โยกย้าย):</b><br> 子-午, 丑-未, 寅-申, 卯-酉, 辰-戌, 巳-亥</p>
+             <p style="font-size:13.5px; margin-bottom:5px;"><b>⚠️ เฮ้ง (เบียดเบียน คดีความ อึดอัดใจ):</b><br> - เนรคุณ: 寅, 巳, 申<br> - ข่มขู่: 丑, 戌, 未<br> - ไร้มารยาท: 子, 卯<br> - ทำร้ายตัวเอง: 辰, 午, 酉, 亥 (เมื่อเจอตัวมันเองซ้ำ)</p>
+             <p style="font-size:13.5px; margin-bottom:5px;"><b>🗡️ ไห่ (ให้ร้าย แทงข้างหลัง):</b><br> 子-未, 丑-午, 寅-巳, 卯-辰, 申-亥, 酉-戌</p>
+             <p style="font-size:13.5px;"><b>🔨 ผั่ว (แตกหัก เสียหาย เริ่มใหม่):</b><br> 子-酉, 丑-辰, 寅-亥, 卯-午, 巳-申, 未-戌</p>
+             </div>`;
+    html += `</div>`;
+
+    // --- TAB 4: วัฏจักร & ดาว ---
+    html += `<div id="glos-stars" class="tab-content-glos" style="display:none;">`;
+    html += `<div class="glos-section"><h3 class="glos-title">⏳ 12 วัฏจักร (12 Growth Phases)</h3>`;
     for(let key in diShiDesc) { html += `<div class="encyc-item"><b>${diShiDesc[key].th} (${key}):</b> ${diShiDesc[key].desc}</div>`; }
-    html += `</div><div class="encyc-section"><h3 class="encyc-title">⚡ ปฏิสัมพันธ์ (Interactions)</h3>
-                <div class="encyc-item"><b>ฮะ (ภาคี):</b> รวมตัว, ผูกพัน, ราบรื่น, ได้รับความช่วยเหลือ</div>
-                <div class="encyc-item"><b>ชง (ปะทะ):</b> ขัดแย้ง, เปลี่ยนแปลงกะทันหัน, อุบัติเหตุ, เคลื่อนที่</div>
-                <div class="encyc-item"><b>เฮ้ง (เบียดเบียน):</b> อึดอัดใจ, วุ่นวาย, กดดัน, คดีความ</div>
-                <div class="encyc-item"><b>ไห่ (ให้ร้าย):</b> ถูกแทงข้างหลัง, นินทา, ปัญหาสุขภาพซ่อนเร้น</div>
-                <div class="encyc-item"><b>ผั่ว (แตกหัก):</b> เสียหาย, พังทลาย, ต้องเริ่มต้นใหม่</div></div>`;
+    html += `</div>`;
+
+    html += `<div class="glos-section"><h3 class="glos-title">🔮 ดาวพิเศษหลัก (Shen Sha)</h3>
+             <ul style="font-size:13.5px; line-height:1.8;">
+                <li><b>🌟 อุปถัมภ์ (เทียนอี้กุ้ยเหริน):</b> ดาวที่ดีที่สุด มีคนช่วย แคล้วคลาด</li>
+                <li><b>🌸 ดอกท้อ (เถาฮวา):</b> ดาวเสน่ห์ ดึงดูดเพศตรงข้ามและคนรอบข้าง</li>
+                <li><b>🐎 ม้าเดินทาง (อี้หม่า):</b> ชีพจรลงเท้า โยกย้าย ต่างประเทศ</li>
+                <li><b>💰 ลู่เสิน:</b> ความอุดมสมบูรณ์ มั่งคั่ง มีกินมีใช้</li>
+                <li><b>📚 เหวินชาง:</b> เรียนเก่ง วิชาการโดดเด่น ปัญญาเลิศ</li>
+                <li><b>⚔️ ดาบแกะ (หยางเริ่น):</b> พลังอำนาจเด็ดขาด ทะเยอทะยานสูง</li>
+                <li><b>🎨 ฮั้วก่าย:</b> ดาวศิลปิน รักสันโดษ เซนส์ลี้ลับ ศาสนา</li>
+                <li><b>🎖️ เจียงซิง:</b> ดาวขุนพล บารมีผู้นำ คุมคนอยู่</li>
+             </ul></div>`;
+    
+    html += `<div class="glos-section"><h3 class="glos-title">🕳️ ดาวคงบ้วง (Void)</h3>
+             <p style="font-size:13.5px;">เมื่อใดที่เสาหรือปีจรตกตำแหน่งคงบ้วง พลังงานในจุดนั้นจะ "ว่างเปล่า" หรือลดทอนลงครึ่งหนึ่ง ทำสิ่งใดต้องออกแรงมากกว่าปกติถึงจะสำเร็จ</p>
+             </div>`;
+    html += `</div>`;
+
+    // --- TAB 5: คลังขุมทรัพย์ ---
+    html += `<div id="glos-vaults" class="tab-content-glos" style="display:none;">`;
+    html += `<div class="glos-section"><h3 class="glos-title">🔐 4 คลังสุสาน (The 4 Vaults)</h3>
+             <p style="font-size:13.5px;">กิ่งดินที่เป็น "ธาตุดิน" ทั้ง 4 ตัว ถูกจัดให้เป็นจุดกักเก็บพลังงานของแต่ละฤดูกาล เรียกว่า "คลัง" ซึ่งแบ่งออกเป็น 3 ประเภทต่อบุคคล คือ คลังสมบัติ, คลังอำนาจ, และคลังอุปถัมภ์</p>
+             <ul style="font-size:13.5px; line-height:1.8;">
+                <li><b>辰 (มะโรง)</b> = คลังของ <b>น้ำ</b></li>
+                <li><b>未 (มะแม)</b> = คลังของ <b>ไม้</b></li>
+                <li><b>戌 (จอ)</b> = คลังของ <b>ไฟ/ดิน</b></li>
+                <li><b>丑 (ฉลู)</b> = คลังของ <b>ทอง</b></li>
+             </ul>
+             <table class="glos-table" style="margin-top:10px;">
+                <tr><th>ดิถี (คุณ)</th><th>💰 คลังสมบัติ<br>(ไฉ่โข่ว)</th><th>🏛️ คลังอำนาจ<br>(กัวโข่ว)</th><th>📚 คลังอุปถัมภ์<br>(อิ่งโข่ว)</th></tr>
+                <tr><td>🌳 ธาตุไม้</td><td>戌 (จอ)</td><td>丑 (ฉลู)</td><td>辰 (มะโรง)</td></tr>
+                <tr><td>🔥 ธาตุไฟ</td><td>丑 (ฉลู)</td><td>辰 (มะโรง)</td><td>未 (มะแม)</td></tr>
+                <tr><td>⛰️ ธาตุดิน</td><td>辰 (มะโรง)</td><td>未 (มะแม)</td><td>戌 (จอ)</td></tr>
+                <tr><td>🪙 ธาตุทอง</td><td>未 (มะแม)</td><td>戌 (จอ)</td><td>丑 (ฉลู)</td></tr>
+                <tr><td>💧 ธาตุน้ำ</td><td>戌 (จอ)</td><td>辰 (มะโรง)</td><td>丑 (ฉลู)</td></tr>
+             </table>
+             <p style="font-size:13px; color:#d32f2f; margin-top:10px;">* คลังสมบัติจะถูกเปิดออกเมื่อมี "ปีจร" หรือ "วัยจร" ที่ชงกับมันวิ่งเข้ามาชน (เช่น คลังสมบัติคือ 戌 ต้องรอปี 辰 วิ่งมาชนคลังถึงจะเปิดรับทรัพย์ก้อนโต!)</p>
+             </div>`;
+    html += `</div>`;
+
     document.getElementById('glossary-detail').innerHTML = html; 
     document.getElementById('glossary-modal').style.display = "flex";
+    
+    // รีเซ็ตหน้าแรก
+    openGlosTab(null, 'glos-gods');
+    document.querySelector('.tab-link-glos').classList.add('active');
 }
 function closeGlossary() { document.getElementById('glossary-modal').style.display = "none"; }
 
+// ... โค้ด AI / Save Sheets ด้านล่างคงเดิม ...
 function getDailyHoroscope() {
     const btn = document.getElementById('ai-daily-btn'); 
     const resultBox = document.getElementById('ai-result-box'); 

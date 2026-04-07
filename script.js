@@ -3,6 +3,7 @@ let currentBaZiData = {};
 let currentTimeData = {}; 
 let activeDaYunData = {}; 
 let activeLiuNianData = {}; 
+let dmStrengthData = {}; // 🌟 ตัวแปรใหม่สำหรับเก็บค่าความแข็งแรงดิถีส่งให้ AI 🌟
 let savedRecordsList = [];
 
 const elementMap = {
@@ -125,14 +126,22 @@ function calculateDMStrength() {
         }
     });
 
-    const dmBox = document.getElementById('dm-strength-box');
-    let dmHtml = `<div class="dm-strength-title">กำลังของดิถี (Day Master Strength)</div>`;
-    dmHtml += `<p style="font-size:15px;">ดิถี (ตัวคุณ) คือ <strong>${elementMap[dm].thName}</strong> (ธาตุ${dmType === 'wood' ? 'ไม้' : dmType === 'fire' ? 'ไฟ' : dmType === 'earth' ? 'ดิน' : dmType === 'metal' ? 'ทอง' : 'น้ำ'})</p>`;
-    
     const thTypeMap = {'wood': 'ไม้', 'fire': 'ไฟ', 'earth': 'ดิน', 'metal': 'ทอง', 'water': 'น้ำ'};
     let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
     let supportingTh = `${thTypeMap[supportType]}, ${thTypeMap[dmType]}`;
 
+    // 🌟 จัดเก็บข้อมูลความแข็งแรงดิถีลงตัวแปร Global เพื่อเตรียมส่งให้ AI 🌟
+    dmStrengthData = {
+        score: score,
+        status: score >= 50 ? "แข็งแรง (Strong)" : "อ่อนแอ (Weak)",
+        favorable: score >= 50 ? weakeningTh : supportingTh,
+        unfavorable: score >= 50 ? supportingTh : weakeningTh
+    };
+
+    const dmBox = document.getElementById('dm-strength-box');
+    let dmHtml = `<div class="dm-strength-title">กำลังของดิถี (Day Master Strength)</div>`;
+    dmHtml += `<p style="font-size:15px;">ดิถี (ตัวคุณ) คือ <strong>${elementMap[dm].thName}</strong> (ธาตุ${thTypeMap[dmType]})</p>`;
+    
     if (score >= 50) {
         dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-strong">💪 ดิถีแข็งแรง (Strong)</span> (คะแนน ${score}/100)</p>`;
         dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
@@ -179,7 +188,6 @@ function getInteractionHTML(gan, zhi) {
     return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
 }
 
-// 🌟 ฟังก์ชันใหม่: แสดงผลเวลาปัจจุบันทันทีที่เปิดเว็บ 🌟
 function renderCurrentTimeBaZi() {
     const now = new Date();
     const currentSolar = Solar.fromDate(now);
@@ -206,7 +214,6 @@ function calculateBaZi() {
     
     if (!dateInput || !timeInput) return alert("กรุณากรอกวันที่และเวลาเกิดให้ครบถ้วนครับ");
 
-    // อัปเดตเวลาปัจจุบันอีกรอบเผื่อข้ามวัน
     renderCurrentTimeBaZi();
 
     const [y, m, d] = dateInput.split('-'); const [h, min] = timeInput.split(':');
@@ -305,7 +312,6 @@ function showPopup(titleName, elementId, type) {
             if (interactions.heavenlyCombos[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', myContext);
             if (interactions.heavenlyClashes[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', myContext);
         } else {
-            // 🌟 บริบท: ผู้ใช้คลิกดูเวลาปัจจุบัน 🌟
             if (Object.keys(currentBaZiData).length > 0) {
                 htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
                 pillarsToCheck.forEach(p => {
@@ -353,7 +359,6 @@ function showPopup(titleName, elementId, type) {
                 foundStars.forEach(star => { specialStarsHtml += `<li style="margin-bottom: 5px;"><strong>${star.name}</strong><br><span style="font-size: 0.85em; color: #555;">${star.desc}</span></li>`; });
             }
         } else {
-            // 🌟 บริบท: ผู้ใช้คลิกดูเวลาปัจจุบัน 🌟
             if (Object.keys(currentBaZiData).length > 0) {
                 htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตา ณ เวลานี้:</strong></p>`;
                 pillarsToCheck.forEach(p => {
@@ -373,7 +378,6 @@ function showPopup(titleName, elementId, type) {
     if (relationHtml !== '') {
         htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #ffb300; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔍 ปฏิสัมพันธ์ (Interactions):</p>${relationHtml}</div>`;
     } else if (type === 'current' && Object.keys(currentBaZiData).length > 0) {
-        // แจ้งเตือนเฉพาะกรณีที่ผูกดวงแล้ว แต่เวลาปัจจุบันไม่ได้ชงฮะอะไร
         htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะหรือส่งผลพิเศษกับเสาใดในดวงชะตากำเนิดครับ</p></div>`;
     }
 
@@ -396,10 +400,14 @@ function analyzeWithAI() {
     resultBox.style.display = "block";
     aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
 
+    // 🌟 แนบข้อมูลความแข็งแรงดิถี วัยจร และปีจร ไปใน Payload ด้วย 🌟
     const payload = {
         action: "analyze",
         personal_info: { name: document.getElementById('name').value || "ไม่ระบุ", gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value },
-        bazi_results: currentBaZiData
+        bazi_results: currentBaZiData,
+        dm_strength: dmStrengthData,
+        da_yun: activeDaYunData,
+        liu_nian: activeLiuNianData
     };
 
     fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
@@ -461,7 +469,6 @@ function loadSavedData() {
     calculateBaZi();
 }
 
-// 🌟 สั่งให้โหลดข้อมูลเก่าและดึงเวลาปัจจุบันมาโชว์ทันทีที่เปิดเว็บ 🌟
 window.onload = function() { 
     fetchSavedData(); 
     renderCurrentTimeBaZi();

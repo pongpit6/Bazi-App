@@ -17,7 +17,6 @@ button:hover { background-color: #b71c1c; }
 .char { font-size: 28px; font-weight: bold; }
 .icon { font-size: 18px; }
 
-/* 🌟 ธาตุให้คุณ/ให้โทษ (Visual Yong Shen) 🌟 */
 .fav-element { border-top: 5px solid #4caf50 !important; }
 .unfav-element { border-top: 5px solid #f44336 !important; }
 
@@ -28,19 +27,10 @@ button:hover { background-color: #b71c1c; }
 .water { background-color: #e3f2fd; border-color: #2196f3; color: #0d47a1; }
 .day-master { box-shadow: 0 0 0 4px #d32f2f, 0 4px 10px rgba(211,47,47,0.3); animation: pulse 2s infinite; z-index: 10;}
 
-/* 🌟 Sticky Chart 🌟 */
 .sticky-chart { 
-    position: sticky; 
-    top: 0; 
-    z-index: 100; 
-    background: rgba(255, 255, 255, 0.95); 
-    backdrop-filter: blur(5px);
-    padding-bottom: 10px; 
-    margin: -15px -15px 20px -15px; 
-    padding: 15px;
-    border-bottom: 2px solid #e0e0e0;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    border-radius: 0 0 10px 10px;
+    position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+    padding-bottom: 10px; margin: -15px -15px 20px -15px; padding: 15px; border-bottom: 2px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 0 0 10px 10px;
 }
 
 @keyframes pulse {
@@ -104,18 +94,26 @@ button:hover { background-color: #b71c1c; }
 /* 🌟 Tabs UI 🌟 */
 .tab-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; overflow-x: auto; scrollbar-width: none; }
 .tab-container::-webkit-scrollbar { display: none; }
-.tab-link { background: none; border: none; padding: 10px 15px; cursor: pointer; font-size: 15px; font-weight: bold; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap;}
-.tab-link:hover { color: #03a9f4; }
+.tab-link, .tab-link-glos { background: none; border: none; padding: 10px 15px; cursor: pointer; font-size: 15px; font-weight: bold; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap;}
+.tab-link:hover, .tab-link-glos:hover { color: #03a9f4; }
 .tab-link.active { color: #03a9f4; border-bottom: 3px solid #03a9f4; }
-.tab-content { display: none; animation: fadeIn 0.3s; }
-.tab-content.active { display: block; }
+.tab-link-glos.active { color: #607d8b; border-bottom: 3px solid #607d8b; }
+.tab-content, .tab-content-glos { display: none; animation: fadeIn 0.3s; }
+.tab-content.active, .tab-content-glos.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .encyc-section { background: #fff; border: 1px solid #eee; border-left: 4px solid #03a9f4; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+.glos-section { background: #fff; border: 1px solid #eee; border-left: 4px solid #607d8b; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
 .encyc-title { font-weight: bold; font-size: 16px; color: #0288d1; margin-bottom: 8px; margin-top: 0; }
+.glos-title { font-weight: bold; font-size: 16px; color: #455a64; margin-bottom: 8px; margin-top: 0; }
 .encyc-item { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
 .encyc-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 
 .advice-box { padding: 8px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; line-height: 1.4; }
 .advice-good { background-color: #e8f5e9; border-left: 3px solid #4caf50; color: #1b5e20; }
 .advice-bad { background-color: #ffebee; border-left: 3px solid #f44336; color: #b71c1c; }
+
+/* Table ในพจนานุกรม */
+.glos-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13.5px; }
+.glos-table th, .glos-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.glos-table th { background-color: #f1f8e9; color: #333; }

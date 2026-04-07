@@ -38,6 +38,9 @@ button:hover { background-color: #b71c1c; }
 .luck-pillar .box { width: 75px; min-height: 90px; margin-bottom: 5px; cursor: default; }
 .luck-pillar .box:hover { transform: none; box-shadow: none; }
 
+/* 🌟 CSS เพิ่มเติมสำหรับสิบเทพในโชคจร 🌟 */
+.luck-shishen { font-size: 12px; font-weight: bold; color: #d32f2f; margin-bottom: 4px; padding: 2px 6px; background-color: #ffebee; border-radius: 4px; border: 1px solid #ffcdd2;}
+
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 .close { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888; }

@@ -4,7 +4,7 @@ let currentTimeData = {};
 let activeDaYunData = {}; 
 let activeLiuNianData = {}; 
 let dmStrengthData = {}; 
-let savedRecordsList = [];
+let savedRecordsList = {};
 let partnerBaZiData = {};
 let currentKongWang = ""; 
 let currentVaults = {}; 
@@ -122,6 +122,15 @@ const elementMetaphors = {
         'fire': { fav: 'แสงตะวันสะท้อนผิวน้ำงดงาม สร้างสมดุลอุณหภูมิให้แม่น้ำอบอุ่น', unfav: 'ไฟกองใหญ่ต้มน้ำจนเดือดพล่าน ระเหยกลายเป็นไอ อารมณ์แปรปรวน' },
         'earth': { fav: 'ดินช่วยสร้างเขื่อนกั้นน้ำให้อยู่ในร่องรอย บังคับทิศทางให้ใช้ประโยชน์ได้', unfav: 'ดินโคลนสาดลงน้ำ ทำให้น้ำขุ่นมัว สกปรกมืดมิด ไร้ทางออก' }
     }
+};
+
+// 🌟 อัปเกรดความหมายของอิมเจีย (Na Yin) แต่ละธาตุ 🌟
+const naYinDesc = {
+    'ทอง': 'ลึกๆ เด็ดขาด ตัดสินใจเฉียบขาด เย็นชาและมีกฎเกณฑ์ในใจ',
+    'ไม้': 'ลึกๆ เป็นคนยึดมั่นในหลักการ มีเมตตา ชอบพัฒนาตัวเอง',
+    'น้ำ': 'ลึกๆ อ่อนไหว คิดลึกซึ้ง ลื่นไหลไปตามสถานการณ์ ซ่อนความลับเก่ง',
+    'ไฟ': 'ลึกๆ เป็นคนใจร้อน ซ่อนความกระตือรือร้นและทะเยอทะยานไว้สูง',
+    'ดิน': 'ลึกๆ เป็นคนหนักแน่น ดื้อเงียบ อนุรักษ์นิยม ไม่ชอบการเปลี่ยนแปลง'
 };
 
 const iconMap = { 'wood': '🌳', 'fire': '🔥', 'earth': '⛰️', 'metal': '🪙', 'water': '💧' };
@@ -246,14 +255,13 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
     }
 }
 
-// 🌟 อัปเดตฟังก์ชัน Tooltip ให้แสดงธาตุและบอกความหมายอิมเจีย 🌟
+// 🌟 อัปเดตอิมเจีย ใน Tooltip ให้โชว์คำอธิบาย 🌟
 function updateShiShenLabels(dataObj, prefix, dayGan) {
     if(!dayGan) return;
     ['year', 'month', 'day', 'hour'].forEach(p => {
         let el = document.getElementById(prefix ? `${prefix}-${p}-shishen` : `${p}-shishen`);
         if(el) {
             if(p === 'day' && prefix === '') { 
-                // ข้ามดิถี 
             } else {
                 const gan = dataObj[p].gan;
                 let tenGodCh = tenGodsMap[dayGan][gan];
@@ -273,10 +281,9 @@ function updateShiShenLabels(dataObj, prefix, dayGan) {
         }
         if (naYinEl && dataObj[p].naYin) {
             let nayinName = dataObj[p].naYin;
-            // สกัดธาตุจากชื่อจีน
             let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'น้ำ' : nayinName.includes('火') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
-            // เพิ่มคำอธิบายอิมเจียลงใน Tooltip
-            naYinEl.innerHTML = `อิมเจีย: ${nyElement}<span class="tooltip-text" style="width:250px;"><b>🎶 อิมเจีย: ${nayinName} (ธาตุ${nyElement})</b><br>พลังธาตุแฝง (เสียง) บ่งบอกถึง "นิสัยเบื้องลึก อารมณ์ซ่อนเร้น หรือบรรยากาศแวดล้อมที่แท้จริง" ของเสานี้</span>`;
+            let nyDesc = naYinDesc[nyElement] || 'พลังธาตุแฝง (เสียง) บ่งบอกถึง บรรยากาศแวดล้อมที่แท้จริง';
+            naYinEl.innerHTML = `อิมเจีย: ${nyElement}<span class="tooltip-text" style="width:250px;"><b>🎶 อิมเจีย: ${nayinName} (ธาตุ${nyElement})</b><br>${nyDesc}</span>`;
         }
     });
 }
@@ -426,7 +433,7 @@ function getAdviceText(type, context) {
     return "";
 }
 
-// 🌟 อัปเดต Pop-up ให้บอกความหมายของอิมเจียชัดเจน 🌟
+// 🌟 อัปเดต อิมเจีย ใน Pop-up ให้โชว์คำอธิบายเฉพาะเจาะจง 🌟
 function showPopup(titleName, elementId, type) {
     const [pillar, level] = elementId.split('-');
     const sourceData = type === 'natal' ? currentBaZiData : currentTimeData;
@@ -456,7 +463,8 @@ function showPopup(titleName, elementId, type) {
     if (pillarData.naYin) {
         let nayinName = pillarData.naYin;
         let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'น้ำ' : nayinName.includes('火') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
-        htmlContent += `<p style="margin-bottom:5px;">🎶 <b>อิมเจีย (ธาตุเสียง):</b> ${nayinName} (ธาตุ${nyElement})<br><span style="color:#555; font-size:12.5px;">-> พลังธาตุแฝงที่ผสมจากราศีบน-ล่าง ใช้ดู "นิสัยเบื้องลึก อารมณ์ซ่อนเร้น หรือบรรยากาศที่แท้จริง" ของเสานี้</span></p>`;
+        let nyDesc = naYinDesc[nyElement] || 'พลังธาตุแฝงที่ผสมจากราศีบน-ล่าง';
+        htmlContent += `<p style="margin-bottom:5px;">🎶 <b>อิมเจีย (ธาตุเสียง):</b> ${nayinName} (ธาตุ${nyElement})<br><span style="color:#555; font-size:12.5px;">-> ${nyDesc}</span></p>`;
     }
     
     if (level === 'earth' && currentKongWang.includes(char)) {
@@ -726,6 +734,15 @@ function renderLuck(solar, genderNum) {
     }
 }
 
+// 🌟 ตัวช่วยสร้างป้าย Tooltip สวยๆ สำหรับพจนานุกรม 🌟
+function rChar(char) {
+    const d = elementMap[char];
+    if(!d) return char;
+    let th = d.thName.split(' ')[0]; // ดึงแค่คำหน้า เช่น "ชวด" แทน "ชวด (หนู)"
+    let typeName = d.type.replace('wood','ไม้').replace('fire','ไฟ').replace('earth','ดิน').replace('metal','ทอง').replace('water','น้ำ');
+    return `<span class="tooltip-container" style="color:#0277bd; font-weight:bold; cursor:help; border-bottom: 1px dashed #0277bd;">${d.icon} ${th} (${char})<span class="tooltip-text" style="width:150px;"><b>${d.thName}</b><br>ธาตุ: ${typeName}</span></span>`;
+}
+
 function openEncycTab(evt, tabName) {
     let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content");
@@ -858,6 +875,7 @@ function openGlosTab(evt, tabName) {
     if(evt) evt.currentTarget.className += " active";
 }
 
+// 🌟 อัปเกรดพจนานุกรมให้เป็น Interactive (มี Tooltips) 🌟
 function openGlossary() {
     let html = '';
 
@@ -876,20 +894,20 @@ function openGlossary() {
              <p style="font-size:13.5px;">การรวมตัวของราศีบน 2 ธาตุ กลายเป็นธาตุใหม่ (แสดงถึงความปรองดอง)</p>
              <table class="glos-table">
                 <tr><th>คู่ภาคี</th><th>ผลลัพธ์ธาตุใหม่</th></tr>
-                <tr><td>甲 (ไม้หยาง) + 己 (ดินหยิน)</td><td>= <b>ธาตุดิน</b> (ความน่าเชื่อถือ)</td></tr>
-                <tr><td>乙 (ไม้หยิน) + 庚 (ทองหยาง)</td><td>= <b>ธาตุทอง</b> (ความยุติธรรม)</td></tr>
-                <tr><td>丙 (ไฟหยาง) + 辛 (ทองหยิน)</td><td>= <b>ธาตุน้ำ</b> (ปัญญาบารมี)</td></tr>
-                <tr><td>丁 (ไฟหยิน) + 壬 (น้ำหยาง)</td><td>= <b>ธาตุไม้</b> (ความเมตตา)</td></tr>
-                <tr><td>戊 (ดินหยาง) + 癸 (น้ำหยิน)</td><td>= <b>ธาตุไฟ</b> (ความไร้ปรานี/กฎเกณฑ์)</td></tr>
+                <tr><td>${rChar('甲')} + ${rChar('己')}</td><td>= <b>ธาตุดิน ⛰️</b> (ความน่าเชื่อถือ)</td></tr>
+                <tr><td>${rChar('乙')} + ${rChar('庚')}</td><td>= <b>ธาตุทอง 🪙</b> (ความยุติธรรม)</td></tr>
+                <tr><td>${rChar('丙')} + ${rChar('辛')}</td><td>= <b>ธาตุน้ำ 💧</b> (ปัญญาบารมี)</td></tr>
+                <tr><td>${rChar('丁')} + ${rChar('壬')}</td><td>= <b>ธาตุไม้ 🌳</b> (ความเมตตา)</td></tr>
+                <tr><td>${rChar('戊')} + ${rChar('癸')}</td><td>= <b>ธาตุไฟ 🔥</b> (ความไร้ปรานี/กฎเกณฑ์)</td></tr>
              </table></div>`;
 
     html += `<div class="glos-section"><h3 class="glos-title">⛈️ ฟ้าชง (Heavenly Clashes)</h3>
              <p style="font-size:13.5px;">การปะทะกันของราศีบน (ความขัดแย้งที่แสดงออกภายนอกชัดเจน)</p>
-             <ul style="font-size:13.5px; line-height:1.8;">
-                <li><b>甲 (ไม้) ชง 庚 (ทอง):</b> ขัดแย้งเรื่องอุดมการณ์ ความคิดแตกหัก</li>
-                <li><b>乙 (ไม้) ชง 辛 (ทอง):</b> ถูกทำร้ายจิตใจ ทรยศหักหลัง</li>
-                <li><b>丙 (ไฟ) ชง 壬 (น้ำ):</b> ขัดแย้งรุนแรง ปะทะอารมณ์ซึ่งหน้า</li>
-                <li><b>丁 (ไฟ) ชง 癸 (น้ำ):</b> ปัญหาลับหลัง ชิงดีชิงเด่น</li>
+             <ul style="font-size:14px; line-height:1.8;">
+                <li>${rChar('甲')} <b>ชง</b> ${rChar('庚')}: ขัดแย้งเรื่องอุดมการณ์ ความคิดแตกหัก</li>
+                <li>${rChar('乙')} <b>ชง</b> ${rChar('辛')}: ถูกทำร้ายจิตใจ ทรยศหักหลัง</li>
+                <li>${rChar('丙')} <b>ชง</b> ${rChar('壬')}: ขัดแย้งรุนแรง ปะทะอารมณ์ซึ่งหน้า</li>
+                <li>${rChar('丁')} <b>ชง</b> ${rChar('癸')}: ปัญหาลับหลัง ชิงดีชิงเด่น</li>
              </ul></div>`;
     html += `</div>`;
 
@@ -899,28 +917,38 @@ function openGlossary() {
              <p style="font-size:13.5px;">การจับคู่ที่เหนียวแน่นที่สุด (เหมือนสามีภรรยา)</p>
              <table class="glos-table">
                 <tr><th>คู่ฮะ</th><th>ผลลัพธ์ธาตุ</th></tr>
-                <tr><td>子 (ชวด) + 丑 (ฉลู)</td><td>= ดิน</td></tr>
-                <tr><td>寅 (ขาล) + 亥 (กุน)</td><td>= ไม้</td></tr>
-                <tr><td>卯 (เถาะ) + 戌 (จอ)</td><td>= ไฟ</td></tr>
-                <tr><td>辰 (มะโรง) + 酉 (ระกา)</td><td>= ทอง</td></tr>
-                <tr><td>巳 (มะเส็ง) + 申 (วอก)</td><td>= น้ำ</td></tr>
-                <tr><td>午 (มะเมีย) + 未 (มะแม)</td><td>= ไฟ/ดิน</td></tr>
+                <tr><td>${rChar('子')} + ${rChar('丑')}</td><td>= ธาตุดิน ⛰️</td></tr>
+                <tr><td>${rChar('寅')} + ${rChar('亥')}</td><td>= ธาตุไม้ 🌳</td></tr>
+                <tr><td>${rChar('卯')} + ${rChar('戌')}</td><td>= ธาตุไฟ 🔥</td></tr>
+                <tr><td>${rChar('辰')} + ${rChar('酉')}</td><td>= ธาตุทอง 🪙</td></tr>
+                <tr><td>${rChar('巳')} + ${rChar('申')}</td><td>= ธาตุน้ำ 💧</td></tr>
+                <tr><td>${rChar('午')} + ${rChar('未')}</td><td>= ธาตุไฟ/ดิน 🔥⛰️</td></tr>
              </table></div>`;
 
     html += `<div class="glos-section"><h3 class="glos-title">🤝 ซาฮะ (ไตรภาคี)</h3>
              <p style="font-size:13.5px;">การรวมตัวของ 3 นักษัตร สร้างพลังธาตุที่ยิ่งใหญ่ที่สุด</p>
-             <ul style="font-size:13.5px; line-height:1.8;">
-                <li><b>申(วอก) + 子(ชวด) + 辰(มะโรง):</b> รวมเป็น <b>ธาตุน้ำ</b> (ปัญญา/ไหลลื่น)</li>
-                <li><b>亥(กุน) + 卯(เถาะ) + 未(มะแม):</b> รวมเป็น <b>ธาตุไม้</b> (เมตตา/เติบโต)</li>
-                <li><b>寅(ขาล) + 午(มะเมีย) + 戌(จอ):</b> รวมเป็น <b>ธาตุไฟ</b> (รุ่งโรจน์/ชื่อเสียง)</li>
-                <li><b>巳(มะเส็ง) + 酉(ระกา) + 丑(ฉลู):</b> รวมเป็น <b>ธาตุทอง</b> (เด็ดขาด/ยุติธรรม)</li>
+             <ul style="font-size:14px; line-height:1.8;">
+                <li>${rChar('申')} + ${rChar('子')} + ${rChar('辰')}: รวมเป็น <b>ธาตุน้ำ 💧</b> (ปัญญา/ไหลลื่น)</li>
+                <li>${rChar('亥')} + ${rChar('卯')} + ${rChar('未')}: รวมเป็น <b>ธาตุไม้ 🌳</b> (เมตตา/เติบโต)</li>
+                <li>${rChar('寅')} + ${rChar('午')} + ${rChar('戌')}: รวมเป็น <b>ธาตุไฟ 🔥</b> (รุ่งโรจน์/ชื่อเสียง)</li>
+                <li>${rChar('巳')} + ${rChar('酉')} + ${rChar('丑')}: รวมเป็น <b>ธาตุทอง 🪙</b> (เด็ดขาด/ยุติธรรม)</li>
              </ul></div>`;
 
     html += `<div class="glos-section"><h3 class="glos-title">⚡ การปะทะ (ชง เฮ้ง ไห่ ผั่ว)</h3>
-             <p style="font-size:13.5px; margin-bottom:5px;"><b>💥 ชง (ปะทะรุนแรง แตกหัก โยกย้าย):</b><br> 子-午, 丑-未, 寅-申, 卯-酉, 辰-戌, 巳-亥</p>
-             <p style="font-size:13.5px; margin-bottom:5px;"><b>⚠️ เฮ้ง (เบียดเบียน คดีความ อึดอัดใจ):</b><br> - เนรคุณ: 寅, 巳, 申<br> - ข่มขู่: 丑, 戌, 未<br> - ไร้มารยาท: 子, 卯<br> - ทำร้ายตัวเอง: 辰, 午, 酉, 亥 (เจอตัวมันเองซ้ำ)</p>
-             <p style="font-size:13.5px; margin-bottom:5px;"><b>🗡️ ไห่ (ให้ร้าย แทงข้างหลัง):</b><br> 子-未, 丑-午, 寅-巳, 卯-辰, 申-亥, 酉-戌</p>
-             <p style="font-size:13.5px;"><b>🔨 ผั่ว (แตกหัก เสียหาย เริ่มใหม่):</b><br> 子-酉, 丑-辰, 寅-亥, 卯-午, 巳-申, 未-戌</p>
+             <p style="font-size:14px; margin-bottom:5px;"><b>💥 ชง (ปะทะรุนแรง แตกหัก โยกย้าย):</b><br> 
+             ${rChar('子')}-${rChar('午')}, ${rChar('丑')}-${rChar('未')}, ${rChar('寅')}-${rChar('申')}, ${rChar('卯')}-${rChar('酉')}, ${rChar('辰')}-${rChar('戌')}, ${rChar('巳')}-${rChar('亥')}</p>
+             
+             <p style="font-size:14px; margin-bottom:5px; margin-top:15px;"><b>⚠️ เฮ้ง (เบียดเบียน คดีความ อึดอัดใจ):</b><br> 
+             - เนรคุณ: ${rChar('寅')}, ${rChar('巳')}, ${rChar('申')}<br> 
+             - ข่มขู่: ${rChar('丑')}, ${rChar('戌')}, ${rChar('未')}<br> 
+             - ไร้มารยาท: ${rChar('子')}, ${rChar('卯')}<br> 
+             - ทำร้ายตัวเอง: ${rChar('辰')}, ${rChar('午')}, ${rChar('酉')}, ${rChar('亥')} (เมื่อเจอตัวมันเองซ้ำ)</p>
+             
+             <p style="font-size:14px; margin-bottom:5px; margin-top:15px;"><b>🗡️ ไห่ (ให้ร้าย แทงข้างหลัง):</b><br> 
+             ${rChar('子')}-${rChar('未')}, ${rChar('丑')}-${rChar('午')}, ${rChar('寅')}-${rChar('巳')}, ${rChar('卯')}-${rChar('辰')}, ${rChar('申')}-${rChar('亥')}, ${rChar('酉')}-${rChar('戌')}</p>
+             
+             <p style="font-size:14px; margin-top:15px;"><b>🔨 ผั่ว (แตกหัก เสียหาย เริ่มใหม่):</b><br> 
+             ${rChar('子')}-${rChar('酉')}, ${rChar('丑')}-${rChar('辰')}, ${rChar('寅')}-${rChar('亥')}, ${rChar('卯')}-${rChar('午')}, ${rChar('巳')}-${rChar('申')}, ${rChar('未')}-${rChar('戌')}</p>
              </div>`;
     html += `</div>`;
 
@@ -951,19 +979,19 @@ function openGlossary() {
     html += `<div id="glos-vaults" class="tab-content-glos" style="display:none;">`;
     html += `<div class="glos-section"><h3 class="glos-title">🔐 4 คลังสุสาน (The 4 Vaults)</h3>
              <p style="font-size:13.5px;">กิ่งดินที่เป็น "ธาตุดิน" ทั้ง 4 ตัว ถูกจัดให้เป็นจุดกักเก็บพลังงานของแต่ละฤดูกาล เรียกว่า "คลัง" ซึ่งแบ่งออกเป็น 3 ประเภทต่อบุคคล คือ คลังสมบัติ, คลังอำนาจ, และคลังอุปถัมภ์</p>
-             <ul style="font-size:13.5px; line-height:1.8;">
-                <li><b>辰 (มะโรง)</b> = คลังของ <b>น้ำ</b></li>
-                <li><b>未 (มะแม)</b> = คลังของ <b>ไม้</b></li>
-                <li><b>戌 (จอ)</b> = คลังของ <b>ไฟ/ดิน</b></li>
-                <li><b>丑 (ฉลู)</b> = คลังของ <b>ทอง</b></li>
+             <ul style="font-size:14px; line-height:1.8;">
+                <li>${rChar('辰')} = คลังของ <b>น้ำ 💧</b></li>
+                <li>${rChar('未')} = คลังของ <b>ไม้ 🌳</b></li>
+                <li>${rChar('戌')} = คลังของ <b>ไฟ/ดิน 🔥⛰️</b></li>
+                <li>${rChar('丑')} = คลังของ <b>ทอง 🪙</b></li>
              </ul>
              <table class="glos-table" style="margin-top:10px;">
                 <tr><th>ดิถี (คุณ)</th><th>💰 คลังสมบัติ<br>(ไฉ่โข่ว)</th><th>🏛️ คลังอำนาจ<br>(กัวโข่ว)</th><th>📚 คลังอุปถัมภ์<br>(อิ่งโข่ว)</th></tr>
-                <tr><td>🌳 ธาตุไม้</td><td>戌 (จอ)</td><td>丑 (ฉลู)</td><td>辰 (มะโรง)</td></tr>
-                <tr><td>🔥 ธาตุไฟ</td><td>丑 (ฉลู)</td><td>辰 (มะโรง)</td><td>未 (มะแม)</td></tr>
-                <tr><td>⛰️ ธาตุดิน</td><td>辰 (มะโรง)</td><td>未 (มะแม)</td><td>戌 (จอ)</td></tr>
-                <tr><td>🪙 ธาตุทอง</td><td>未 (มะแม)</td><td>戌 (จอ)</td><td>丑 (ฉลู)</td></tr>
-                <tr><td>💧 ธาตุน้ำ</td><td>戌 (จอ)</td><td>辰 (มะโรง)</td><td>丑 (ฉลู)</td></tr>
+                <tr><td>🌳 ธาตุไม้</td><td>${rChar('戌')}</td><td>${rChar('丑')}</td><td>${rChar('辰')}</td></tr>
+                <tr><td>🔥 ธาตุไฟ</td><td>${rChar('丑')}</td><td>${rChar('辰')}</td><td>${rChar('未')}</td></tr>
+                <tr><td>⛰️ ธาตุดิน</td><td>${rChar('辰')}</td><td>${rChar('未')}</td><td>${rChar('戌')}</td></tr>
+                <tr><td>🪙 ธาตุทอง</td><td>${rChar('未')}</td><td>${rChar('戌')}</td><td>${rChar('丑')}</td></tr>
+                <tr><td>💧 ธาตุน้ำ</td><td>${rChar('戌')}</td><td>${rChar('辰')}</td><td>${rChar('丑')}</td></tr>
              </table>
              <p style="font-size:13px; color:#d32f2f; margin-top:10px;">* คลังสมบัติจะถูกเปิดออกเมื่อมี "ปีจร" หรือ "วัยจร" ที่ชงกับมันวิ่งเข้ามาชน (เช่น คลังสมบัติคือ 戌 ต้องรอปี 辰 วิ่งมาชนคลังถึงจะเปิดรับทรัพย์ก้อนโต!)</p>
              </div>`;

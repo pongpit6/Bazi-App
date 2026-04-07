@@ -301,3 +301,64 @@ function saveToGoogleSheets() {
     .then(() => { alert("บันทึกสำเร็จ!"); btn.innerText = "บันทึกดวงนี้ลงฐานข้อมูล"; btn.disabled = false; })
     .catch(() => { alert("เกิดข้อผิดพลาด"); btn.innerText = "บันทึกดวงนี้ลงฐานข้อมูล"; btn.disabled = false; });
 }
+// --- วางต่อท้ายไฟล์ script.js ของเดิมได้เลยครับ ---
+
+// ตัวแปรสำหรับเก็บรายชื่อที่โหลดมาจากฐานข้อมูล
+let savedRecordsList = [];
+
+// ฟังก์ชันดึงข้อมูลจาก Google Sheets ตอนเปิดหน้าเว็บ
+function fetchSavedData() {
+    const select = document.getElementById('saved-profiles');
+    
+    // ใช้คำสั่ง GET เพื่อดึงข้อมูลมาจาก Google Apps Script
+    fetch(API_URL)
+    .then(response => response.json())
+    .then(data => {
+        savedRecordsList = data; // เก็บข้อมูลลงตัวแปร
+        
+        if (data.length === 0) {
+            select.innerHTML = '<option value="">-- ยังไม่มีข้อมูลที่บันทึกไว้ --</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="">-- เลือกดวงที่บันทึกไว้ --</option>';
+        // เอาข้อมูลมาวนลูปสร้างเป็นตัวเลือกใน Dropdown
+        data.forEach((record, index) => {
+            const option = document.createElement('option');
+            option.value = index; 
+            // โชว์ชื่อ และ วันเกิด ให้หาง่ายๆ
+            option.text = `${record.name || 'ไม่ระบุชื่อ'} (เกิด: ${record.birth_date})`;
+            select.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+        select.innerHTML = '<option value="">-- โหลดข้อมูลล้มเหลว --</option>';
+    });
+}
+
+// ฟังก์ชันเมื่อกดปุ่ม "เรียกดู"
+function loadSavedData() {
+    const select = document.getElementById('saved-profiles');
+    const selectedIndex = select.value;
+    
+    if (selectedIndex === "") {
+        return alert("กรุณาเลือกรายชื่อจากเมนูก่อนครับ");
+    }
+
+    const record = savedRecordsList[selectedIndex];
+    
+    // เอาข้อมูลเก่ามาเติมใส่ฟอร์มให้
+    document.getElementById('name').value = record.name;
+    document.getElementById('gender').value = record.gender;
+    document.getElementById('birth_date').value = record.birth_date;
+    document.getElementById('birth_time').value = record.birth_time;
+    
+    // สั่งให้กดปุ่มคำนวณให้อัตโนมัติเลย
+    calculateBaZi();
+}
+
+// สั่งให้ฟังก์ชันดึงข้อมูลทำงานทันทีเมื่อเปิดหน้าเว็บ
+window.onload = function() {
+    fetchSavedData();
+};

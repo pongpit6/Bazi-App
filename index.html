@@ -10,6 +10,16 @@
 <body>
     <div class="container">
         <h1>ระบบคำนวณปาจื้อ (BaZi)</h1>
+
+        <div class="saved-data-section" style="margin-bottom: 25px; padding: 15px; background: #e3f2fd; border-radius: 8px; border: 1px solid #bbdefb;">
+            <h3 style="margin-top: 0; color: #1565c0; font-size: 16px;">📂 โหลดดวงที่บันทึกไว้</h3>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                <select id="saved-profiles" style="flex: 1;">
+                    <option value="">-- กำลังโหลดข้อมูลจากฐานข้อมูล... --</option>
+                </select>
+                <button onclick="loadSavedData()" style="background-color: #1565c0; padding: 10px 20px;">เรียกดู</button>
+            </div>
+        </div>
         
         <div class="form-section">
             <input type="text" id="name" placeholder="ชื่อ-นามสกุล">

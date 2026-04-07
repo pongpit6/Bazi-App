@@ -33,6 +33,10 @@
             <button onclick="calculateBaZi()">คำนวณผูกดวง</button>
         </div>
 
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button id="tutorial-btn" style="background-color: #009688; color: white; border: none; cursor: pointer; border-radius: 5px; width: 100%; font-size: 16px; padding: 12px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onclick="openTutorial()">🧭 คู่มือสอนอ่านดวงชะตา (Step-by-Step)</button>
+        </div>
+
         <div id="capture-area" style="background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
             
             <div id="element-chart" class="element-chart-container" style="display:none;"></div>
@@ -194,6 +198,102 @@
                 </div>
 
                 <div id="glossary-detail" style="max-height: 65vh; overflow-y: auto; padding: 10px 5px; line-height: 1.6; font-size: 14px; text-align: left;">
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial-modal" class="modal" style="display: none;">
+            <div class="modal-content encyclopedia-content" style="max-width: 800px; background: #f4fcf8;">
+                <span class="close" onclick="closeTutorial()">&times;</span>
+                <h2 style="color: #009688; border-bottom: 2px solid #009688; padding-bottom: 10px; margin-top:0;">🧭 คู่มือสอนอ่านดวงชะตา (Step-by-Step)</h2>
+                
+                <div id="tutorial-detail" style="max-height: 70vh; overflow-y: auto; padding: 10px; line-height: 1.6; font-size: 14.5px; text-align: left;">
+                    
+                    <p style="margin-bottom: 20px;">การอ่านดวงปาจื้อให้เป็นเรื่องราว ไม่ใช่การสุ่มอ่านสัญลักษณ์ แต่มี <b>"ลำดับการอ่าน (Order of Reading)"</b> เพื่อให้เข้าใจแก่นแท้ของมนุษย์ครับ ลองกวาดสายตาตามตัวอย่างด้านล่างนี้เลยครับ:</p>
+
+                    <div class="bazi-grid" style="background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 25px;">
+                        <div class="pillar">
+                            <h3><span style="background:#009688; color:#fff; border-radius:50%; width:22px; height:22px; display:inline-block; text-align:center;">3</span> ยาม (ลูกน้อง)</h3>
+                            <div class="luck-shishen">ซังกัว (แสดงออก)</div>
+                            <div class="box water unfav-element"><span class="char">壬</span><span class="icon">🌊</span><span style="font-size:11px;">น้ำหยาง</span></div>
+                            <div class="box earth"><div class="kongwang-badge">🕳️</div><span class="char">辰</span><span class="icon">🐉</span><span style="font-size:11px;">มะโรง</span>
+                                <div class="star-badges-container"><span class="star-badge vault-badge">📚</span></div>
+                            </div>
+                            <div class="dishi-badge">มู่ (สุสาน)</div>
+                            <div class="nayin-text">อิมเจีย: น้ำ</div>
+                        </div>
+                        <div class="pillar">
+                            <h3><span style="background:#009688; color:#fff; border-radius:50%; width:22px; height:22px; display:inline-block; text-align:center;">1</span> วัน (ตัวคุณ/คู่)</h3>
+                            <div class="luck-shishen" style="background:#e3f2fd; border-color:#90caf9; color:#1565c0;">ดิถี (ตัวคุณ)</div>
+                            <div class="box metal day-master"><span class="char">辛</span><span class="icon">💍</span><span style="font-size:11px;">ทองหยิน</span></div>
+                            <div class="box metal"><span class="char">酉</span><span class="icon">🐓</span><span style="font-size:11px;">ระกา</span>
+                                <div class="star-badges-container"><span class="star-badge">🌟</span><span class="star-badge">🌸</span></div>
+                            </div>
+                            <div class="dishi-badge">หลินกวน (ทำงาน)</div>
+                            <div class="nayin-text">อิมเจีย: ไม้</div>
+                        </div>
+                        <div class="pillar">
+                            <h3><span style="background:#009688; color:#fff; border-radius:50%; width:22px; height:22px; display:inline-block; text-align:center;">2</span> เดือน (พ่อแม่/งาน)</h3>
+                            <div class="luck-shishen">ชิกสัวะ (กดดัน)</div>
+                            <div class="box fire unfav-element"><span class="char">丁</span><span class="icon">🕯️</span><span style="font-size:11px;">ไฟหยิน</span></div>
+                            <div class="box earth fav-element"><span class="char">丑</span><span class="icon">🐂</span><span style="font-size:11px;">ฉลู</span>
+                                <div class="star-badges-container"><span class="star-badge vault-badge">💰</span></div>
+                            </div>
+                            <div class="dishi-badge">หย่าง (เลี้ยงดู)</div>
+                            <div class="nayin-text">อิมเจีย: น้ำ</div>
+                        </div>
+                        <div class="pillar">
+                            <h3><span style="background:#009688; color:#fff; border-radius:50%; width:22px; height:22px; display:inline-block; text-align:center;">3</span> ปี (ผู้ใหญ่/สังคม)</h3>
+                            <div class="luck-shishen">เจี้ยไช้ (มั่นคง)</div>
+                            <div class="box wood fav-element"><span class="char">甲</span><span class="icon">🌳</span><span style="font-size:11px;">ไม้หยาง</span></div>
+                            <div class="box fire unfav-element"><span class="char">午</span><span class="icon">🐎</span><span style="font-size:11px;">มะเมีย</span>
+                                <div class="star-badges-container"><span class="star-badge">🐎</span></div>
+                            </div>
+                            <div class="dishi-badge">ปิ้ง (เจ็บป่วย)</div>
+                            <div class="nayin-text">อิมเจีย: ทอง</div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 1: หาตัวเอกของเรื่อง (ดิถี)</h3>
+                        <p>มองไปที่ <b>"กล่องสี่เหลี่ยมด้านบน ของเสาวัน (Day)"</b> ที่มีกรอบกระพริบๆ นั่นคือ <b>"ดิถี" (Day Master)</b> ตัวแทนแก่นแท้ของคุณ<br>
+                        <i>ทำไมต้องดูก่อน?</i> เพราะสัญลักษณ์อื่นๆ ทั้งหมดในดวง จะถูกนำมาตีความว่ามันเป็นมิตรหรือศัตรูกับ "ดิถี" ตัวนี้ครับ (อย่างในภาพคือ 💍 ทองหยิน - เป็นคนละเมียดละไม รักสวยรักงาม)</p>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 2: ดูสภาพแวดล้อมและฤดูกาลเกิด (กำลังดิถี)</h3>
+                        <p>มองไปที่ <b>"กล่องสี่เหลี่ยมด้านล่าง ของเสาเดือน (Month)"</b> นี่คือฤดูกาลที่คุณเกิด (จากภาพคือเกิดเดือน 🐂 ฉลู หน้าหนาว)<br>
+                        <i>ทำไมต้องดู?</i> เพื่อประเมินว่าตัวเอกของคุณ (ทองหยิน) แข็งแรงหรืออ่อนแอเมื่ออยู่ในฤดูนี้ ระบบจะสรุปเป็นกล่อง <b>"กำลังของดิถี"</b> ให้แล้วด้านบน และจะตีเส้นขอบสี <span style="border-top:3px solid #4caf50; padding:0 5px;">🟩 เขียว (ให้คุณ)</span> หรือ <span style="border-top:3px solid #f44336; padding:0 5px;">🟥 แดง (ให้โทษ)</span> บนกล่องต่างๆ เพื่อบอกว่าคุณควรเข้าหาหรือหลีกเลี่ยงพลังงานไหนครับ</p>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 3: บทบาทและนิสัยภายนอก (10 เทพ)</h3>
+                        <p>กวาดสายตาดู <b>"ป้ายสีแดง/ชมพู ด้านบนสุดของแต่ละเสา"</b> นี่คือ "สิบเทพ (10 Gods)" บ่งบอกถึงไอเทมหรืออาวุธที่คุณมี<br>
+                        เช่น เสาเดือนมี "ชิกสัวะ" แปลว่าชีวิตการทำงานมักมีความกดดัน หรือมีเจ้านายเข้มงวด เสายามมี "ซังกัว" แปลว่าบั้นปลายชีวิตหรือลูกน้อง มักมีความคิดกบฏ ท้าทายแหวกแนว (คุณสามารถเปิดอ่านความหมายเต็มๆ ได้ในเมนู 📖 คัมภีร์ดวงชะตา)</p>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 4: พลังงานและแบตเตอรี่ชีวิต (12 วัฏจักร)</h3>
+                        <p>ดูที่ <b>"ป้ายสีเทา ใต้กล่องราศีล่าง"</b> มันคือระดับแบตเตอรี่ในแต่ละเรื่อง<br>
+                        เช่น เสาวัน (คู่ครอง) ได้ "หลินกวน" (แข็งแรงเต็มที่) แปลว่าคุณจะได้คู่ครองที่มีความสามารถ พึ่งพาได้ แต่เสาปีได้ "ปิ้ง" (เจ็บป่วย) แปลว่าวัยเด็กหรือบรรพบุรุษอาจจะมีพลังงานอ่อนแอ ถดถอยครับ</p>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 5: สกิลพิเศษติดตัว (ดาวพิเศษ & คลัง)</h3>
+                        <p>ดูที่ <b>"ไอคอนวงกลมเล็กๆ 🌟🌸🐎 ใต้สัญลักษณ์สัตว์"</b><br>
+                        นี่คือพรสวรรค์ของคุณ! จากภาพ เสาวันมีดาวอุปถัมภ์ (🌟) และดอกท้อ (🌸) แปลว่าตัวคุณหรือคู่ครองจะมีเสน่ห์และมีคนคอยอุ้มชู และถ้าเห็นป้ายสีเหลือง (💰🏛️📚) นั่นคือคุณมี <b>"คลังสมบัติ/อำนาจ/ปัญญา"</b> ซ่อนอยู่ รอให้ปีจรวิ่งเข้ามาชนเพื่อรับรางวัลใหญ่ครับ!</p>
+                    </div>
+
+                    <div class="tutorial-step">
+                        <h3 style="color:#d32f2f;">👉 ขั้นที่ 6: หลุมดำ (คงบ้วง) และ อารมณ์ซ่อนเร้น (อิมเจีย)</h3>
+                        <p>ถ้าเห็น <b>ไอคอนหลุมดำ (🕳️)</b> แปะอยู่ที่เสาไหน แปลว่าพลังงานเสานั้นจะ "ว่างเปล่า" หรือเหนื่อยฟรี (ในภาพเสายามติดหลุมดำ แปลว่าทำบุญกับลูกน้องไม่ค่อยขึ้น) ส่วนบรรทัดล่างสุดคือ <b>อิมเจีย (ธาตุเสียง)</b> ให้เอาเมาส์ชี้ดู เพื่ออ่านว่า "ลึกๆ ในใจแล้ว" คุณซ่อนอารมณ์ดื้อเงียบ หรือ ใจร้อน เอาไว้ครับ</p>
+                    </div>
+
+                    <div class="tutorial-step" style="background:#fff3e0; padding:15px; border-radius:8px; border-left:4px solid #ff9800;">
+                        <h3 style="color:#e65100; margin-top:0;">💡 เคล็ดลับขั้นสุดยอด: การดู "ปฏิสัมพันธ์ (ชง/ฮะ)"</h3>
+                        <p style="margin-bottom:0;">ดวงชะตาไม่ใช่ภาพนิ่ง แต่มันขยับและทำปฏิกิริยากันตลอดเวลา! ให้คุณ <b>"คลิก" ที่กล่องตัวอักษรใดก็ได้</b> Pop-up จะเด้งขึ้นมาบอกคุณทันทีว่า เสานี้กำลังไป "ฮะ (รักกัน)" หรือ "ชง (ตีกัน)" กับเสาไหนในดวง และถ้าปีนี้ (กาลเวลาปัจจุบัน) วิ่งเข้ามาชน จะเกิดเรื่องดีหรือร้ายกับคุณครับ!</p>
+                    </div>
+
                 </div>
             </div>
         </div>

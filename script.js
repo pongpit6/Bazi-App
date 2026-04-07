@@ -31,7 +31,6 @@ const shiShenMap = {
 const pillarContextMap = { 'year': 'เสาปี', 'month': 'เสาเดือน', 'day': 'เสาวัน', 'hour': 'เสายาม' };
 const pillarNamesTh = { 'year': 'ปี', 'month': 'เดือน', 'day': 'วัน', 'hour': 'ยาม' };
 
-// 🌟 เพิ่มลอจิกความสัมพันธ์แบบครบเซ็ต (เฮ้ง ไห่ ผั่ว) 🌟
 const interactions = {
     heavenlyCombos: { '甲':'己', '己':'甲', '乙':'庚', '庚':'乙', '丙':'辛', '辛':'丙', '丁':'壬', '壬':'丁', '戊':'癸', '癸':'戊' },
     heavenlyClashes: { '甲':'庚', '庚':'甲', '乙':'辛', '辛':'乙', '丙':'壬', '壬':'丙', '丁':'癸', '癸':'丁' },
@@ -90,57 +89,76 @@ function renderBox(elementId, chineseChar) {
     if(data.type) box.classList.add(data.type);
 }
 
-// 🌟 ฟังก์ชันคำนวณกำลังดิถี (Day Master Strength) 🌟
+// 🌟 อัปเกรดฟังก์ชันคำนวณกำลังดิถี พร้อมคำอธิบายเชิงลึก 🌟
 function calculateDMStrength() {
     const dm = currentBaZiData.day.gan;
     const dmType = elementMap[dm].type;
     const generatingMap = { 'wood': 'water', 'fire': 'wood', 'earth': 'fire', 'metal': 'earth', 'water': 'metal' };
-    const supportType = generatingMap[dmType]; // ธาตุที่มาส่งเสริมดิถี
+    const exhaustingMap = { 'wood': ['fire', 'earth', 'metal'], 'fire': ['earth', 'metal', 'water'], 'earth': ['metal', 'water', 'wood'], 'metal': ['water', 'wood', 'fire'], 'water': ['wood', 'fire', 'earth'] };
+    
+    const supportType = generatingMap[dmType]; // ธาตุที่มาส่งเสริม (อุปถัมภ์)
+    const weakeningTypes = exhaustingMap[dmType]; // ธาตุที่มาบั่นทอน (ถ่ายเท, พิฆาต)
 
-    // กำหนดน้ำหนักคะแนนตามความสำคัญของแต่ละเสา
+    // น้ำหนักของแต่ละตำแหน่ง (เสาเดือนสำคัญที่สุดในการกำหนดฤดูกาล)
     const weights = { monthZhi: 40, dayZhi: 15, yearZhi: 10, hourZhi: 10, monthGan: 10, yearGan: 8, hourGan: 7 };
 
     let score = 0;
+    let supportingElements = [];
+    let weakeningElements = [];
+
     const elementsToCheck = [
-        { char: currentBaZiData.month.zhi, weight: weights.monthZhi },
-        { char: currentBaZiData.day.zhi, weight: weights.dayZhi },
-        { char: currentBaZiData.year.zhi, weight: weights.yearZhi },
-        { char: currentBaZiData.hour.zhi, weight: weights.hourZhi },
-        { char: currentBaZiData.month.gan, weight: weights.monthGan },
-        { char: currentBaZiData.year.gan, weight: weights.yearGan },
-        { char: currentBaZiData.hour.gan, weight: weights.hourGan }
+        { char: currentBaZiData.month.zhi, weight: weights.monthZhi, name: 'เสาเดือน (ฤดูกาลเกิด)' },
+        { char: currentBaZiData.day.zhi, weight: weights.dayZhi, name: 'ราศีล่างวันเกิด' },
+        { char: currentBaZiData.year.zhi, weight: weights.yearZhi, name: 'เสาปี' },
+        { char: currentBaZiData.hour.zhi, weight: weights.hourZhi, name: 'เสายาม' },
+        { char: currentBaZiData.month.gan, weight: weights.monthGan, name: 'ราศีบนเดือน' },
+        { char: currentBaZiData.year.gan, weight: weights.yearGan, name: 'ราศีบนปี' },
+        { char: currentBaZiData.hour.gan, weight: weights.hourGan, name: 'ราศีบนยาม' }
     ];
 
     elementsToCheck.forEach(item => {
         if (!item.char) return;
         const elType = elementMap[item.char].type;
-        // ถ้าเป็นธาตุเดียวกัน หรือ ธาตุที่ส่งเสริม จะได้คะแนนความแข็งแรง
         if (elType === dmType || elType === supportType) {
             score += item.weight;
+            supportingElements.push(`${elementMap[item.char].thName} (จาก ${item.name})`);
+        } else {
+            weakeningElements.push(`${elementMap[item.char].thName} (จาก ${item.name})`);
         }
     });
 
     const dmBox = document.getElementById('dm-strength-box');
     let dmHtml = `<div class="dm-strength-title">กำลังของดิถี (Day Master Strength)</div>`;
-    dmHtml += `<p>ดิถีของคุณคือ <strong>${elementMap[dm].thName}</strong> (ธาตุ${dmType === 'wood' ? 'ไม้' : dmType === 'fire' ? 'ไฟ' : dmType === 'earth' ? 'ดิน' : dmType === 'metal' ? 'ทอง' : 'น้ำ'})</p>`;
+    dmHtml += `<p style="font-size:15px;">ดิถี (ตัวคุณ) คือ <strong>${elementMap[dm].thName}</strong> (ธาตุ${dmType === 'wood' ? 'ไม้' : dmType === 'fire' ? 'ไฟ' : dmType === 'earth' ? 'ดิน' : dmType === 'metal' ? 'ทอง' : 'น้ำ'})</p>`;
     
+    // แปลชื่อธาตุเป็นภาษาไทย
+    const thTypeMap = {'wood': 'ไม้', 'fire': 'ไฟ', 'earth': 'ดิน', 'metal': 'ทอง', 'water': 'น้ำ'};
+    let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
+    let supportingTh = `${thTypeMap[supportType]}, ${thTypeMap[dmType]}`;
+
     if (score >= 50) {
-        dmHtml += `<p>ผลการประเมิน: <span class="dm-strong">💪 ดิถีแข็งแรง (Strong)</span> (คะแนน ${score}/100)</p>`;
-        dmHtml += `<p class="dm-strength-desc"><strong>ธาตุให้คุณ (ใช้ปรับสมดุล):</strong> ธาตุที่บั่นทอนดิถี ได้แก่ <strong>${dmType === 'wood' ? 'ไฟ, ดิน, ทอง' : dmType === 'fire' ? 'ดิน, ทอง, น้ำ' : dmType === 'earth' ? 'ทอง, น้ำ, ไม้' : dmType === 'metal' ? 'น้ำ, ไม้, ไฟ' : 'ไม้, ไฟ, ดิน'}</strong></p>`;
+        dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-strong">💪 ดิถีแข็งแรง (Strong)</span> (คะแนน ${score}/100)</p>`;
+        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
+        dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่แข็งแรง:</strong> เพราะในดวงชะตานี้มีธาตุที่ส่งเสริมคุณอยู่มาก (เกินครึ่งหนึ่งของดวง) โดยเฉพาะ <strong>${supportingElements[0]}</strong> ที่ให้กำลังคุณอย่างมาก</p>`;
+        dmHtml += `<p style="margin-bottom: 8px;"><strong>✅ ธาตุให้คุณ (ปรับสมดุล):</strong> เมื่อดิถีแข็งแรงเกินไปตามหลักปาจื้อจะต้อง "ระบาย" หรือ "ควบคุม" พลังงานออก ดังนั้นธาตุที่ให้คุณคือ <strong>ธาตุ${weakeningTh}</strong> ซึ่งจะช่วยลดความแข็งกร้าวและนำความสำเร็จมาให้</p>`;
+        dmHtml += `<p><strong>❌ ธาตุให้โทษ:</strong> ควรหลีกเลี่ยง <strong>ธาตุ${supportingTh}</strong> เพราะจะทำให้ดิถีแข็งแรงจนล้น ส่งผลให้เกิดความดื้อรั้น เอาแต่ใจ หรือมีศัตรู/คู่แข่งเพิ่มขึ้น</p>`;
+        dmHtml += `</div>`;
     } else {
-        dmHtml += `<p>ผลการประเมิน: <span class="dm-weak">🍃 ดิถีอ่อนแอ (Weak)</span> (คะแนน ${score}/100)</p>`;
-        dmHtml += `<p class="dm-strength-desc"><strong>ธาตุให้คุณ (ใช้ปรับสมดุล):</strong> ธาตุที่ส่งเสริมดิถี ได้แก่ <strong>${dmType === 'wood' ? 'น้ำ, ไม้' : dmType === 'fire' ? 'ไม้, ไฟ' : dmType === 'earth' ? 'ไฟ, ดิน' : dmType === 'metal' ? 'ดิน, ทอง' : 'ทอง, น้ำ'}</strong></p>`;
+        dmHtml += `<p style="margin-top: 10px;">ผลการประเมิน: <span class="dm-weak">🍃 ดิถีอ่อนแอ (Weak)</span> (คะแนน ${score}/100)</p>`;
+        dmHtml += `<div style="text-align:left; background-color: #ffffff; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #e0e0e0; font-size:13.5px; line-height: 1.6;">`;
+        dmHtml += `<p style="margin-bottom: 8px;"><strong>เหตุผลที่อ่อนแอ:</strong> เพราะดวงชะตานี้แวดล้อมไปด้วยธาตุที่มารุมบั่นทอนและแย่งชิงพลังงานของคุณ (โดยเฉพาะอิทธิพลจาก <strong>${weakeningElements[0]}</strong>)</p>`;
+        dmHtml += `<p style="margin-bottom: 8px;"><strong>✅ ธาตุให้คุณ (ปรับสมดุล):</strong> เมื่อดิถีอ่อนแอตามหลักปาจื้อจะต้อง "เสริมกำลัง" หรือ "อุปถัมภ์" ดังนั้นธาตุที่ให้คุณคือ <strong>ธาตุ${supportingTh}</strong> ซึ่งจะช่วยเป็นฐานที่มั่นคงและมีผู้ใหญ่คอยเกื้อหนุน</p>`;
+        dmHtml += `<p><strong>❌ ธาตุให้โทษ:</strong> ควรหลีกเลี่ยง <strong>ธาตุ${weakeningTh}</strong> เพราะจะยิ่งมาถ่ายเทหรือพิฆาตพลังงานของคุณให้หมดไป ส่งผลให้เหนื่อยล้า แบกรับภาระหนัก หรือถูกกดดัน</p>`;
+        dmHtml += `</div>`;
     }
 
     dmBox.innerHTML = dmHtml;
     dmBox.style.display = "block";
 }
 
-// 🌟 สร้าง HTML ข้อความพยากรณ์ ชง ฮะ เฮ้ง สำหรับปีจร/วัยจร 🌟
 function getInteractionHTML(gan, zhi) {
     let res = [];
     
-    // ตรวจสอบ ฟ้าฮะ กับดิถี
     if (interactions.heavenlyCombos[gan] === currentBaZiData.day.gan) {
         res.push(`<div class="interact-good">✨ ฟ้าฮะดิถี</div>`);
     }
@@ -154,7 +172,7 @@ function getInteractionHTML(gan, zhi) {
         else if (interactions.earthlyDestructions[zhi] === chartZhi) res.push(`<div class="interact-bad">🔨 ผั่ว${pillarNamesTh[p]}</div>`);
     });
 
-    if(res.length > 0) return `<div class="luck-interaction">${res.slice(0, 3).join('')}</div>`; // แสดงผลสูงสุด 3 อย่างเพื่อไม่ให้ล้นกล่อง
+    if(res.length > 0) return `<div class="luck-interaction">${res.slice(0, 3).join('')}</div>`; 
     return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
 }
 
@@ -183,7 +201,7 @@ function calculateBaZi() {
         renderBox(`${p}-earth`, currentBaZiData[p].zhi);
     });
 
-    calculateDMStrength(); // คำนวณความแข็งแรงของดิถี
+    calculateDMStrength(); 
     renderLuck(solar, genderInput === 'ชาย' ? 1 : 0);
 
     document.getElementById('bazi-result').style.display = "flex";
@@ -207,7 +225,7 @@ function renderLuck(solar, genderNum) {
         const startAge = dy.getStartAge();
         const startYear = dy.getStartYear();
         
-        const interactionHtml = getInteractionHTML(gan, zhi); // คำนวณความสัมพันธ์กับพื้นดวง
+        const interactionHtml = getInteractionHTML(gan, zhi); 
 
         const pillarDiv = document.createElement('div');
         pillarDiv.className = 'luck-pillar';
@@ -227,11 +245,12 @@ function renderLuck(solar, genderNum) {
 
     for (let i = 0; i < 10; i++) {
         const targetYear = currentYear + i;
+        // แก้ไขวันดึงข้อมูลเป็นเดือน 6 เพื่อข้ามวันลี่ชุนให้ชัวร์ๆ ตามที่เราตกลงกันไว้ครับ 🌟
         const lYear = Solar.fromYmd(targetYear, 6, 1).getLunar();
         const yGan = lYear.getYearGan();
         const yZhi = lYear.getYearZhi();
 
-        const interactionHtml = getInteractionHTML(yGan, yZhi); // คำนวณความสัมพันธ์กับพื้นดวง
+        const interactionHtml = getInteractionHTML(yGan, yZhi); 
 
         const pillarDiv = document.createElement('div');
         pillarDiv.className = 'luck-pillar';
@@ -276,7 +295,6 @@ function showPopup(titleName, elementId) {
         htmlContent += `<p><strong>ราศีล่าง (นักษัตร):</strong> ${char} (${elementMap[char].thName})</p>`;
         htmlContent += `<p><strong>ราศีแฝง:</strong> <span style="color:#d32f2f; font-weight:bold;">${shiShenArray}</span></p>`;
 
-        // 🌟 เช็กความสัมพันธ์พื้นดวงแบบอัปเกรด (ฮะ, ชง, เฮ้ง, ไห่, ผั่ว) 🌟
         pillarsToCheck.forEach(p => {
             if (p !== pillar) {
                 const otherChar = currentBaZiData[p].zhi;

@@ -113,7 +113,6 @@ button:hover { background-color: #b71c1c; }
 .advice-good { background-color: #e8f5e9; border-left: 3px solid #4caf50; color: #1b5e20; }
 .advice-bad { background-color: #ffebee; border-left: 3px solid #f44336; color: #b71c1c; }
 
-/* Table ในพจนานุกรม */
 .glos-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13.5px; }
 .glos-table th, .glos-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 .glos-table th { background-color: #f1f8e9; color: #333; }

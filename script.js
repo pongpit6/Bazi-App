@@ -227,7 +227,7 @@ function renderLuck(solar, genderNum) {
 
     for (let i = 0; i < 10; i++) {
         const targetYear = currentYear + i;
-        const lYear = Solar.fromYmd(targetYear, 1, 1).getLunar();
+        const lYear = Solar.fromYmd(targetYear, 6, 1).getLunar();
         const yGan = lYear.getYearGan();
         const yZhi = lYear.getYearZhi();
 

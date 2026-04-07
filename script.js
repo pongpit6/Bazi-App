@@ -6,7 +6,7 @@ let activeLiuNianData = {};
 let dmStrengthData = {}; 
 let savedRecordsList = [];
 let partnerBaZiData = {};
-let currentKongWang = ""; // 🌟 เก็บค่าดาวคงบ้วง
+let currentKongWang = ""; 
 
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳', thName: 'ไม้หยาง' }, '乙': { type: 'wood', icon: '🌿', thName: 'ไม้หยิน' },
@@ -71,6 +71,7 @@ const tenGodsMap = {
     '癸': {'甲':'伤官', '乙':'食神', '丙':'正财', '丁':'偏财', '戊':'正官', '己':'七杀', '庚':'正印', '辛':'偏印', '壬':'劫财', '癸':'比肩'}
 };
 
+const pillarContextMap = { 'year': 'เสาปี (บรรพบุรุษ/ผู้ใหญ่)', 'month': 'เสาเดือน (การงาน/พ่อแม่)', 'day': 'เสาวัน (คู่ครอง/ตัวตน)', 'hour': 'เสายาม (บั้นปลาย/ลูกน้อง)' };
 const pillarNamesTh = { 'year': 'ปี', 'month': 'เดือน', 'day': 'วัน', 'hour': 'ยาม' };
 const interactions = {
     heavenlyCombos: { '甲':'己', '己':'甲', '乙':'庚', '庚':'乙', '丙':'辛', '辛':'丙', '丁':'壬', '壬':'丁', '戊':'癸', '癸':'戊' },
@@ -282,14 +283,115 @@ function calculateDMStrength() {
     dmBox.style.display = "block";
 }
 
+// 🌟 กู้คืนระบบ Pop-up ของแท้! (แสดงฮะ/ชง/ดาวพิเศษ ตอนคลิก) 🌟
 function getAdviceText(type, context) {
-    if (type === 'ฮะ') return `<div class="advice-box advice-good"><strong>คำแนะนำ (ฮะ - ภาคี):</strong> ช่วงเวลานี้จะมีความราบรื่น ได้รับความช่วยเหลือ เกิดความร่วมมือหรือพบเจอคนถูกใจในเรื่องที่เกี่ยวข้องกับ${context}</div>`;
-    if (type === 'ชง') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ชง - ปะทะ):</strong> ระวังการเปลี่ยนแปลงกะทันหัน อุบัติเหตุ หรือความขัดแย้งรุนแรงในเรื่องที่เกี่ยวกับ${context} ควรมีสติและไม่ประมาท</div>`;
-    if (type === 'เฮ้ง') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (เฮ้ง - เบียดเบียน):</strong> อาจเกิดความอึดอัดใจ ความวุ่นวาย กดดัน หรือปัญหาคดีความเอกสารที่เกี่ยวกับ${context}</div>`;
-    if (type === 'ไห่') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ไห่ - ให้ร้าย):</strong> ระวังการถูกแทงข้างหลัง ถูกนินทา หรือปัญหาสุขภาพที่มาจาก${context}</div>`;
-    if (type === 'ผั่ว') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ผั่ว - แตกหัก):</strong> สิ่งที่หวังไว้อาจพังทลาย ต้องเริ่มต้นใหม่ หรือมีความเสียหายเกิดขึ้นกับ${context}</div>`;
+    if (type === 'ฮะ') return `<div class="advice-box advice-good"><strong>คำแนะนำ (ฮะ - ภาคี):</strong> ราบรื่น ได้รับความช่วยเหลือ หรือเจอคนถูกใจในเรื่องเกี่ยวกับ ${context}</div>`;
+    if (type === 'ชง') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ชง - ปะทะ):</strong> ระวังการเปลี่ยนแปลง อุบัติเหตุ หรือขัดแย้งในเรื่องเกี่ยวกับ ${context}</div>`;
+    if (type === 'เฮ้ง') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (เฮ้ง - เบียดเบียน):</strong> อาจเกิดความอึดอัดใจ วุ่นวาย หรือกดดันในเรื่อง ${context}</div>`;
+    if (type === 'ไห่') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ไห่ - ให้ร้าย):</strong> ระวังถูกแทงข้างหลัง นินทา หรือปัญหาสุขภาพจาก ${context}</div>`;
+    if (type === 'ผั่ว') return `<div class="advice-box advice-bad"><strong>คำแนะนำ (ผั่ว - แตกหัก):</strong> สิ่งที่หวังอาจพังทลาย ต้องเริ่มใหม่ในเรื่อง ${context}</div>`;
     return "";
 }
+
+function showPopup(titleName, elementId, type) {
+    const [pillar, level] = elementId.split('-');
+    const sourceData = type === 'natal' ? currentBaZiData : currentTimeData;
+    const pillarData = sourceData[pillar];
+    
+    let htmlContent = `<h3>ตำแหน่ง: ${pillarContextMap[pillar]} ${type === 'natal' ? `` : '(เวลาปัจจุบัน)'}</h3><hr style="margin: 10px 0; border: 0.5px solid #eee;">`;
+    let relationHtml = ''; let specialStarsHtml = '';
+    const pillarsToCheck = ['year', 'month', 'day', 'hour'];
+
+    if (level === 'heaven') {
+        const char = pillarData.gan;
+        htmlContent += `<p><strong>ราศีบน:</strong> ${char} (${elementMap[char].thName})</p>`;
+        
+        if(type === 'natal') {
+            const tenGodCh = tenGodsMap[currentBaZiData.day.gan][char];
+            const shiShen = pillar === 'day' ? 'ดิถี (ตัวคุณ)' : shiShenMap[tenGodCh] || tenGodCh;
+            htmlContent += `<p><strong>สิบเทพ:</strong> <span style="color:#d32f2f; font-weight:bold;">${shiShen}</span></p>`;
+            
+            pillarsToCheck.forEach(p => {
+                if (p !== pillar) {
+                    const otherChar = currentBaZiData[p].gan;
+                    if (interactions.heavenlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✅ <strong>ฟ้าฮะ:</strong> ผูกพันกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                    if (interactions.heavenlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">⚠️ <strong>ฟ้าชง:</strong> ขัดแย้งกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                }
+            });
+            
+            if (interactions.heavenlyCombos[char] === activeDaYunData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', pillarContextMap[pillar]);
+            if (interactions.heavenlyClashes[char] === activeDaYunData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', pillarContextMap[pillar]);
+            if (interactions.heavenlyCombos[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', pillarContextMap[pillar]);
+            if (interactions.heavenlyClashes[char] === activeLiuNianData.gan) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', pillarContextMap[pillar]);
+        } else {
+            if (Object.keys(currentBaZiData).length > 0) {
+                htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงกำเนิด:</strong></p>`;
+                pillarsToCheck.forEach(p => {
+                    const otherChar = currentBaZiData[p].gan;
+                    if (interactions.heavenlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', pillarContextMap[p]);
+                    if (interactions.heavenlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', pillarContextMap[p]);
+                });
+            } else {
+                htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">กรุณาคำนวณผูกดวงก่อน เพื่อดูว่าเวลานี้ส่งผลกระทบอย่างไรกับดวงชะตาของคุณครับ</p></div>`;
+            }
+        }
+    } else {
+        const char = pillarData.zhi;
+        htmlContent += `<p><strong>ราศีล่าง:</strong> ${char} (${elementMap[char].thName})</p>`;
+
+        if(type === 'natal') {
+            htmlContent += `<p><strong>ราศีแฝง:</strong> <span style="color:#d32f2f; font-weight:bold;">${hiddenGanMap[char].join(', ')}</span></p>`;
+
+            pillarsToCheck.forEach(p => {
+                if (p !== pillar) {
+                    const otherChar = currentBaZiData[p].zhi;
+                    if (interactions.earthlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✅ <strong>ลักฮะ:</strong> ผูกพันกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                    if (interactions.earthlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">⚠️ <strong>ลักชง:</strong> ขัดแย้งกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                    if (interactions.earthlyHarms[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">⚠️ <strong>ลักไห่:</strong> ถูกเบียดเบียนจาก เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                    if (interactions.earthlyDestructions[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">⚠️ <strong>ลักผั่ว:</strong> แตกหักกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                    if (interactions.earthlyPunishments[char] && interactions.earthlyPunishments[char].includes(otherChar)) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">⚠️ <strong>ลักเฮ้ง:</strong> วุ่นวายกับ เสา${pillarNamesTh[p]} (${otherChar})</p>`;
+                }
+            });
+
+            let dyZhi = activeDaYunData.zhi;
+            if (interactions.earthlyCombos[char] === dyZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ วัยจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', pillarContextMap[pillar]);
+            if (interactions.earthlyClashes[char] === dyZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 วัยจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', pillarContextMap[pillar]);
+            
+            let lnZhi = activeLiuNianData.zhi;
+            if (interactions.earthlyCombos[char] === lnZhi) relationHtml += `<p style="color:#1565c0; font-size: 0.95em; font-weight:bold;">✨ ปีจรปัจจุบัน เข้ามาฮะ</p>` + getAdviceText('ฮะ', pillarContextMap[pillar]);
+            if (interactions.earthlyClashes[char] === lnZhi) relationHtml += `<p style="color:#b71c1c; font-size: 0.95em; font-weight:bold;">🚨 ปีจรปัจจุบัน เข้ามาชง</p>` + getAdviceText('ชง', pillarContextMap[pillar]);
+
+            const foundStars = checkSpecialStars(char, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
+            if (foundStars.length > 0) {
+                foundStars.forEach(star => { specialStarsHtml += `<li style="margin-bottom: 5px;"><strong>${star.name}</strong><br><span style="font-size: 0.85em; color: #555;">${star.desc}</span></li>`; });
+            }
+        } else {
+            if (Object.keys(currentBaZiData).length > 0) {
+                htmlContent += `<p style="color:#555; font-size: 14px; margin-top: 10px;">⚡ <strong>ผลกระทบกับดวงชะตากำเนิด:</strong></p>`;
+                pillarsToCheck.forEach(p => {
+                    const otherChar = currentBaZiData[p].zhi;
+                    if (interactions.earthlyCombos[char] === otherChar) relationHtml += `<p style="color:#2e7d32; font-size: 0.95em;">✨ เวลานี้เข้ามา <strong>ฮะ</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ฮะ', pillarContextMap[p]);
+                    if (interactions.earthlyClashes[char] === otherChar) relationHtml += `<p style="color:#d32f2f; font-size: 0.95em;">🚨 เวลานี้เข้ามา <strong>ชง</strong> กับ เสา${pillarNamesTh[p]} กำเนิด</p>` + getAdviceText('ชง', pillarContextMap[p]);
+                });
+            } else {
+                htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">กรุณาคำนวณผูกดวงก่อน เพื่อดูผลกระทบครับ</p></div>`;
+            }
+        }
+    }
+
+    if (relationHtml !== '') {
+        htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #ffb300; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔍 ปฏิสัมพันธ์ (Interactions):</p>${relationHtml}</div>`;
+    } else if (type === 'current' && Object.keys(currentBaZiData).length > 0) {
+        htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะกับเสาใดในดวงกำเนิดครับ</p></div>`;
+    }
+
+    if (specialStarsHtml !== '') htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;"><p style="margin-bottom: 8px; font-weight: bold;">🔮 ดาวพิเศษ (Shen Sha):</p><ul style="padding-left: 20px; margin: 0;">${specialStarsHtml}</ul></div>`;
+
+    document.getElementById('popup-detail').innerHTML = htmlContent;
+    document.getElementById('popup-title').innerText = `${titleName} : ${document.getElementById(elementId).querySelector('.char').innerText}`;
+    document.getElementById('popup-modal').style.display = "flex";
+}
+function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
 
 function getInteractionHTML(gan, zhi) {
     let res = [];
@@ -304,9 +406,6 @@ function getInteractionHTML(gan, zhi) {
         let chartZhi = currentBaZiData[p].zhi;
         if (interactions.earthlyClashes[zhi] === chartZhi) res.push(`<div class="interact-bad tooltip-container">💥 ชง${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ชง']}กับเสา${pillarNamesTh[p]}</span></div>`);
         else if (interactions.earthlyCombos[zhi] === chartZhi) res.push(`<div class="interact-good tooltip-container">🤝 ฮะ${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ฮะ']}กับเสา${pillarNamesTh[p]}</span></div>`);
-        else if (interactions.earthlyPunishments[zhi] && interactions.earthlyPunishments[zhi].includes(chartZhi)) res.push(`<div class="interact-bad tooltip-container">⚠️ เฮ้ง${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['เฮ้ง']}กับเสา${pillarNamesTh[p]}</span></div>`);
-        else if (interactions.earthlyHarms[zhi] === chartZhi) res.push(`<div class="interact-bad tooltip-container">⚡ ไห่${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ไห่']}กับเสา${pillarNamesTh[p]}</span></div>`);
-        else if (interactions.earthlyDestructions[zhi] === chartZhi) res.push(`<div class="interact-bad tooltip-container">🔨 ผั่ว${pillarNamesTh[p]}<span class="tooltip-text">${interactDesc['ผั่ว']}กับเสา${pillarNamesTh[p]}</span></div>`);
     });
 
     if(res.length > 0) return `<div class="luck-interaction">${res.slice(0, 3).join('')}</div>`; 
@@ -376,7 +475,6 @@ function calculateBaZi() {
     const lunar = solar.getLunar();
     const bazi = lunar.getEightChar(); 
     
-    // ดึงค่าดาวคงบ้วง
     currentKongWang = bazi.getDayXunKong();
 
     currentBaZiData = {
@@ -393,7 +491,7 @@ function calculateBaZi() {
     });
 
     updateShiShenLabels(currentBaZiData, '', currentBaZiData.day.gan);
-    renderElementChart();
+    renderElementChart(); 
 
     renderCurrentTimeBaZi();
     document.getElementById('current-time-title').innerHTML = `⏳ พลังงานกาลเวลาปัจจุบัน (Current Time)`;
@@ -479,218 +577,147 @@ function renderLuck(solar, genderNum) {
     }
 }
 
-function showPopup(titleName, elementId, type) {
-    document.getElementById('popup-modal').style.display = "flex";
-    document.getElementById('popup-title').innerText = titleName;
-    document.getElementById('popup-detail').innerHTML = "<p style='text-align:center;'>ปิดหน้าต่างนี้และเอาเมาส์ชี้ที่สัญลักษณ์บนหน้าจอเพื่อดูคำแปลได้เลยครับ!</p>";
-}
+// 🌟 ฟังก์ชันใหม่: เปิดคัมภีร์ดวงชะตาส่วนตัว 🌟
+function openEncyclopedia() {
+    if (!currentBaZiData.day) return alert("กรุณาคำนวณผูกดวงก่อนเปิดคัมภีร์ครับ");
+    
+    let html = '';
+    const dmGan = currentBaZiData.day.gan;
+    const dmType = elementMap[dmGan].thName;
 
-function closePopup() { document.getElementById('popup-modal').style.display = "none"; }
+    // 1. อธิบายดิถี
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">👤 ดิถีตัวตน (Day Master)</h3>
+                <p>ดิถีของคุณคือ <b>${dmType} (${dmGan})</b> ซึ่งเป็นตัวแทนแก่นแท้ของจิตวิญญาณคุณ</p>
+                <p>${dmStrengthData.status} ทำให้คุณต้องการ <b>ธาตุ${dmStrengthData.favorable}</b> เพื่อสร้างความสมดุลและความรุ่งโรจน์ในชีวิต</p>
+             </div>`;
+
+    // 2. อธิบาย 10 เทพในดวง
+    let godsInChart = new Set();
+    ['year', 'month', 'hour'].forEach(p => {
+        let gan = currentBaZiData[p].gan;
+        let tenGodCh = tenGodsMap[dmGan][gan];
+        if(tenGodCh) godsInChart.add(shiShenMap[tenGodCh] || tenGodCh);
+    });
+
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">☯️ สิบเทพในดวงกำเนิด (10 Gods)</h3>
+                <p style="font-size:13px; color:#666;">โครงสร้างพลังงานที่หล่อหลอมรูปแบบชีวิตและการงานของคุณ:</p>`;
+    if (godsInChart.size > 0) {
+        godsInChart.forEach(god => {
+            let desc = shiShenDesc[god] || '';
+            html += `<div class="encyc-item"><b>[${god}]</b><br>${desc.replace(/\n/g, '<br>')}</div>`;
+        });
+    } else {
+        html += `<p>ไม่พบสิบเทพที่เด่นชัดในราศีบน</p>`;
+    }
+    html += `</div>`;
+
+    // 3. อธิบายดาวพิเศษ
+    let starsInChart = [];
+    ['year', 'month', 'day', 'hour'].forEach(p => {
+        let zhi = currentBaZiData[p].zhi;
+        let foundStars = checkSpecialStars(zhi, dmGan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
+        foundStars.forEach(s => starsInChart.push(`${s.icon} <b>${s.name}</b> (เสา${pillarNamesTh[p]}): ${s.desc}`));
+    });
+
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">🔮 ดาวพิเศษประจำตัว (Shen Sha)</h3>`;
+    if (starsInChart.length > 0) {
+        let uniqueStars = [...new Set(starsInChart)];
+        uniqueStars.forEach(star => { html += `<div class="encyc-item">${star}</div>`; });
+    } else {
+        html += `<p>ไม่มีดาวพิเศษกลุ่มหลักในดวงกำเนิด (เน้นพึ่งพาความสามารถตนเอง)</p>`;
+    }
+    html += `</div>`;
+
+    // 4. คงบ้วง
+    html += `<div class="encyc-section">
+                <h3 class="encyc-title">🕳️ ดาวคงบ้วง (ตำแหน่งสูญสิ้น)</h3>
+                <p>นักษัตรคงบ้วงของคุณคือ: <b>${currentKongWang}</b></p>
+                <p style="font-size:13.5px;">หากนักษัตรเหล่านี้ปรากฏในดวงกำเนิด หรือวิ่งเข้ามาในปีจร จะทำให้พลังงานในเรื่องนั้นๆ อ่อนกำลังลงครึ่งหนึ่ง หรือรู้สึกว่างเปล่า เติมไม่เต็ม</p>
+             </div>`;
+
+    document.getElementById('encyclopedia-detail').innerHTML = html;
+    document.getElementById('encyclopedia-modal').style.display = "flex";
+}
+function closeEncyclopedia() { document.getElementById('encyclopedia-modal').style.display = "none"; }
 
 function getDailyHoroscope() {
     const btn = document.getElementById('ai-daily-btn');
     const resultBox = document.getElementById('ai-result-box');
     const aiContent = document.getElementById('ai-content');
-    
     renderCurrentTimeBaZi();
     const name = document.getElementById('name').value || "ไม่ระบุ";
     const cacheKey = `daily_cache_${name}_${new Date().toISOString().split('T')[0]}`;
-    
-    if (localStorage.getItem(cacheKey)) {
-        resultBox.style.display = "block";
-        aiContent.innerHTML = localStorage.getItem(cacheKey);
-        return;
-    }
-
-    btn.innerText = "⏳ สับติ้วเซียมซี..."; 
-    btn.disabled = true;
-    resultBox.style.display = "block";
-    aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์พลังงานในวันนี้เทียบกับดวงเกิดของคุณ... ⏳</div>`;
-
+    if (localStorage.getItem(cacheKey)) { resultBox.style.display = "block"; aiContent.innerHTML = localStorage.getItem(cacheKey); return; }
+    btn.innerText = "⏳ สับติ้วเซียมซี..."; btn.disabled = true;
+    resultBox.style.display = "block"; aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์พลังงานในวันนี้เทียบกับดวงเกิดของคุณ... ⏳</div>`;
     const payload = { action: "daily", personal_info: { name: name }, bazi_results: currentBaZiData, current_time: currentTimeData };
-
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(response => response.json())
-    .then(data => {
-        if (data.result === "success") { 
-            localStorage.setItem(cacheKey, data.analysis); 
-            aiContent.innerHTML = data.analysis; 
-        } else {
-            aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
-        }
-        btn.innerText = "🥠 เซียมซีทำนายรายวัน"; 
-        btn.disabled = false;
-    }).catch(error => { 
-        aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`; 
-        btn.innerText = "🥠 เซียมซีทำนายรายวัน"; 
-        btn.disabled = false; 
-    });
+    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json()).then(data => {
+        if (data.result === "success") { localStorage.setItem(cacheKey, data.analysis); aiContent.innerHTML = data.analysis; }
+        else aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
+        btn.innerText = "🥠 เซียมซีทำนายรายวัน"; btn.disabled = false;
+    }).catch(e => { aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`; btn.innerText = "🥠 เซียมซีทำนายรายวัน"; btn.disabled = false; });
 }
 
 function openSynastryModal() { document.getElementById('synastry-modal').style.display = "flex"; }
 function closeSynastryModal() { document.getElementById('synastry-modal').style.display = "none"; }
-
 function calculateSynastry() {
-    const pDate = document.getElementById('partner_birth_date').value;
-    const pTime = document.getElementById('partner_birth_time').value;
+    const pDate = document.getElementById('partner_birth_date').value; const pTime = document.getElementById('partner_birth_time').value;
     if(!pDate || !pTime) return alert("กรุณากรอกวันและเวลาเกิดของคู่ให้ครบถ้วนครับ");
-
     const [y, m, d] = pDate.split('-'); const [h, min] = pTime.split(':');
     const bazi = Solar.fromYmdHms(parseInt(y), parseInt(m), parseInt(d), parseInt(h), parseInt(min), 0).getLunar().getEightChar(); 
-
-    partnerBaZiData = {
-        name: document.getElementById('partner_name').value || "พาร์ทเนอร์", 
-        gender: document.getElementById('partner_gender').value,
-        year: { gan: bazi.getYearGan(), zhi: bazi.getYearZhi() }, 
-        month: { gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi() },
-        day: { gan: bazi.getDayGan(), zhi: bazi.getDayZhi() }, 
-        hour: { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() }
-    };
-
+    partnerBaZiData = { name: document.getElementById('partner_name').value || "พาร์ทเนอร์", gender: document.getElementById('partner_gender').value, year: { gan: bazi.getYearGan(), zhi: bazi.getYearZhi() }, month: { gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi() }, day: { gan: bazi.getDayGan(), zhi: bazi.getDayZhi() }, hour: { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() } };
     closeSynastryModal();
-    const btn = document.getElementById('ai-synastry-btn');
-    document.getElementById('ai-result-box').style.display = "block";
-    document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังทาบดวงชะตาเพื่อหาจุดสมพงษ์... ⏳</div>`;
-    btn.disabled = true;
-
-    const payload = { action: "synastry", my_bazi: currentBaZiData, my_name: document.getElementById('name').value, partner_bazi: partnerBaZiData };
-
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('ai-content').innerHTML = data.result === "success" ? data.analysis : `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
-        btn.disabled = false; 
-        btn.innerText = "💞 เทียบดวงสมพงษ์ (Synastry)";
-    }).catch(error => {
-        document.getElementById('ai-content').innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`;
-        btn.disabled = false; 
-        btn.innerText = "💞 เทียบดวงสมพงษ์ (Synastry)";
+    const btn = document.getElementById('ai-synastry-btn'); document.getElementById('ai-result-box').style.display = "block";
+    document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังทาบดวงชะตาเพื่อหาจุดสมพงษ์... ⏳</div>`; btn.disabled = true;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "synastry", my_bazi: currentBaZiData, my_name: document.getElementById('name').value, partner_bazi: partnerBaZiData }) }).then(r => r.json()).then(data => {
+        document.getElementById('ai-content').innerHTML = data.result === "success" ? data.analysis : `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`; btn.disabled = false; btn.innerText = "💞 เทียบดวงสมพงษ์";
     });
 }
 
 function analyzeWithAI(forceRefresh = false) {
     const name = document.getElementById('name').value || "ไม่ระบุ";
     const cacheKey = `ai_cache_${name}_${document.getElementById('birth_date').value}_${document.getElementById('ai-custom-question').value.trim()}`;
-
-    const btn = document.getElementById('ai-btn');
-    const aiContent = document.getElementById('ai-content');
-
-    if (!forceRefresh && localStorage.getItem(cacheKey)) {
-        document.getElementById('ai-result-box').style.display = "block";
-        aiContent.innerHTML = localStorage.getItem(cacheKey) + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`;
-        return;
-    }
-
-    btn.innerText = "⏳ ซินแสกำลังประมวลผล..."; 
-    btn.disabled = true;
-    document.getElementById('ai-result-box').style.display = "block";
+    const btn = document.getElementById('ai-btn'); const aiContent = document.getElementById('ai-content');
+    if (!forceRefresh && localStorage.getItem(cacheKey)) { document.getElementById('ai-result-box').style.display = "block"; aiContent.innerHTML = localStorage.getItem(cacheKey) + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`; return; }
+    btn.innerText = "⏳ ซินแสกำลังประมวลผล..."; btn.disabled = true; document.getElementById('ai-result-box').style.display = "block";
     aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์เส้นทางชะตาชีวิตของคุณ... ⏳</div>`;
-
-    const payload = { 
-        action: "analyze", 
-        personal_info: { name: name, gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value }, 
-        bazi_results: currentBaZiData, 
-        dm_strength: dmStrengthData, 
-        da_yun: activeDaYunData, 
-        liu_nian: activeLiuNianData, 
-        custom_question: document.getElementById('ai-custom-question').value.trim() 
-    };
-
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(response => response.json())
-    .then(data => {
-        if (data.result === "success") {
-            localStorage.setItem(cacheKey, data.analysis);
-            aiContent.innerHTML = data.analysis + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`;
-        } else {
-            aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด</p>`;
-        }
-        btn.innerText = "✨ ซินแสวิเคราะห์พื้นดวงชะตา"; 
-        btn.disabled = false;
-    }).catch(error => {
-        aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`;
-        btn.innerText = "✨ ซินแสวิเคราะห์พื้นดวงชะตา"; 
-        btn.disabled = false;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "analyze", personal_info: { name: name, gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value }, bazi_results: currentBaZiData, dm_strength: dmStrengthData, da_yun: activeDaYunData, liu_nian: activeLiuNianData, custom_question: document.getElementById('ai-custom-question').value.trim() }) }).then(r => r.json()).then(data => {
+        if (data.result === "success") { localStorage.setItem(cacheKey, data.analysis); aiContent.innerHTML = data.analysis + `<br><br><div style="text-align:center;"><button onclick="analyzeWithAI(true)" style="background:#f44336; color:white; border:none; cursor:pointer; border-radius:5px; font-size:15px; padding:10px 20px; font-weight:bold;">🔄 ขอคำทำนายใหม่</button></div>`; } 
+        else aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด</p>`; btn.innerText = "✨ ซินแสวิเคราะห์ดวงชะตา"; btn.disabled = false;
     });
 }
 
 function downloadBaziImage() {
-    const captureArea = document.getElementById('capture-area');
-    const btn = document.getElementById('download-btn');
-    btn.innerText = "⏳ กำลังประมวลผลรูปภาพ..."; 
-    btn.disabled = true;
-
-    const originalBg = captureArea.style.background;
-    captureArea.style.background = '#ffffff'; 
-
+    const captureArea = document.getElementById('capture-area'); const btn = document.getElementById('download-btn');
+    btn.innerText = "⏳ กำลังประมวลผลรูปภาพ..."; btn.disabled = true;
+    const originalBg = captureArea.style.background; captureArea.style.background = '#ffffff'; 
     html2canvas(captureArea, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-        captureArea.style.background = originalBg;
-        const link = document.createElement('a');
-        link.download = `ดวงชะตา_${document.getElementById('name').value || "MyBaZi"}.png`;
-        link.href = canvas.toDataURL('image/png'); 
-        link.click();
-        btn.innerText = "📸 บันทึกรูปดวงชะตานี้ลงเครื่อง"; 
-        btn.disabled = false;
-    }).catch(error => {
-        console.error("Error capturing image: ", error);
-        alert("เกิดข้อผิดพลาดในการบันทึกรูปภาพครับ");
-        captureArea.style.background = originalBg;
-        btn.innerText = "📸 บันทึกรูปดวงชะตานี้ลงเครื่อง"; 
-        btn.disabled = false;
+        captureArea.style.background = originalBg; const link = document.createElement('a');
+        link.download = `ดวงชะตา_${document.getElementById('name').value || "MyBaZi"}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+        btn.innerText = "📸 บันทึกรูปดวงชะตานี้ลงเครื่อง"; btn.disabled = false;
     });
 }
 
 function saveToGoogleSheets() {
-    const btn = document.getElementById('save-btn');
-    btn.innerText = "กำลังบันทึก..."; 
-    btn.disabled = true;
-
-    const payload = { 
-        name: document.getElementById('name').value, 
-        gender: document.getElementById('gender').value, 
-        birth_date: document.getElementById('birth_date').value, 
-        birth_time: document.getElementById('birth_time').value, 
-        bazi_results: currentBaZiData, 
-        note: "" 
-    };
-
-    fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-    .then(() => { 
-        alert("บันทึกสำเร็จ!"); 
-        fetchSavedData(); 
-        btn.innerText = "💾 บันทึกดวงนี้ลงฐานข้อมูล"; 
-        btn.disabled = false;
-    }).catch(error => {
-        alert("เกิดข้อผิดพลาดในการบันทึก");
-        btn.innerText = "💾 บันทึกดวงนี้ลงฐานข้อมูล"; 
-        btn.disabled = false;
-    });
+    const btn = document.getElementById('save-btn'); btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+    fetch(API_URL, { method: 'POST', body: JSON.stringify({ name: document.getElementById('name').value, gender: document.getElementById('gender').value, birth_date: document.getElementById('birth_date').value, birth_time: document.getElementById('birth_time').value, bazi_results: currentBaZiData, note: "" }) }).then(() => { alert("บันทึกสำเร็จ!"); fetchSavedData(); btn.innerText = "💾 บันทึกดวงนี้ลงฐานข้อมูล"; btn.disabled = false; });
 }
 
 function fetchSavedData() {
-    fetch(API_URL)
-    .then(response => response.json())
-    .then(data => {
-        savedRecordsList = data;
-        let select = document.getElementById('saved-profiles');
+    fetch(API_URL).then(r => r.json()).then(data => {
+        savedRecordsList = data; let select = document.getElementById('saved-profiles');
         select.innerHTML = '<option value="">-- เลือกดวงที่บันทึกไว้ --</option>';
         data.forEach((r, i) => select.innerHTML += `<option value="${i}">${r.name} (${r.birth_date})</option>`);
-    }).catch(error => {
-        document.getElementById('saved-profiles').innerHTML = '<option value="">-- โหลดข้อมูลล้มเหลว --</option>';
     });
 }
 
 function loadSavedData() {
-    const v = document.getElementById('saved-profiles').value;
-    if(v === "") return;
-    document.getElementById('name').value = savedRecordsList[v].name; 
-    document.getElementById('gender').value = savedRecordsList[v].gender;
-    document.getElementById('birth_date').value = savedRecordsList[v].birth_date; 
-    document.getElementById('birth_time').value = savedRecordsList[v].birth_time;
-    calculateBaZi();
+    const v = document.getElementById('saved-profiles').value; if(v === "") return;
+    document.getElementById('name').value = savedRecordsList[v].name; document.getElementById('gender').value = savedRecordsList[v].gender;
+    document.getElementById('birth_date').value = savedRecordsList[v].birth_date; document.getElementById('birth_time').value = savedRecordsList[v].birth_time; calculateBaZi();
 }
 
-window.onload = function() { 
-    fetchSavedData(); 
-    renderCurrentTimeBaZi(); 
-};
+window.onload = function() { fetchSavedData(); renderCurrentTimeBaZi(); };

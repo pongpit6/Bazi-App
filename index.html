@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-width=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BaZi Personal Strategist</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
@@ -153,11 +153,11 @@
             </div>
 
             <div id="ai-buttons-group" class="grid-buttons" style="display: none;">
-                <button class="btn-purple" onclick="analyzeWithAI()">✨ ซินแสวิเคราะห์ดวง</button>
-                <button class="btn-blue" onclick="openEncyclopedia()">📖 คัมภีร์ดวงชะตาส่วนตัว</button>
-                <button class="btn-pink" onclick="openSynastryModal()">💞 เทียบดวงสมพงษ์</button>
-                <button class="btn-grey" onclick="openGlossary()">📚 พจนานุกรมปาจื้อ</button>
-                <button class="btn-yellow" onclick="getDailyHoroscope()" style="grid-column: 1 / -1;">🥠 เซียมซีทำนายรายวัน</button>
+                <button id="ai-btn" class="btn-purple" onclick="analyzeWithAI()">✨ ซินแสวิเคราะห์ดวง</button>
+                <button id="encyclopedia-btn" class="btn-blue" onclick="openEncyclopedia()">📖 คัมภีร์ดวงชะตาส่วนตัว</button>
+                <button id="ai-synastry-btn" class="btn-pink" onclick="openSynastryModal()">💞 เทียบดวงสมพงษ์</button>
+                <button id="glossary-btn" class="btn-grey" onclick="openGlossary()">📚 พจนานุกรมปาจื้อ</button>
+                <button id="ai-daily-btn" class="btn-yellow" onclick="getDailyHoroscope()" style="grid-column: 1 / -1;">🥠 เซียมซีทำนายรายวัน</button>
             </div>
             
             <div id="ai-result-box" style="display: none; margin-top: 20px; padding: 25px; background: #f3e5f5; border-radius: 10px; border-left: 5px solid #9c27b0; text-align: left; line-height: 1.6; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
@@ -294,7 +294,6 @@
                         <h3 style="color:#e65100; margin-top:0;">💡 เคล็ดลับขั้นสุดยอด: การดู "ปฏิสัมพันธ์ (ชง/ฮะ)"</h3>
                         <p style="margin-bottom:0;">ดวงชะตาไม่ใช่ภาพนิ่ง แต่มันขยับทำปฏิกิริยากันตลอดเวลา! ให้คุณ <b>"คลิก" ที่กล่องตัวอักษรใดก็ได้ในแอป</b> Pop-up จะเด้งขึ้นมาบอกคุณทันทีว่า เสานี้กำลังไป "ฮะ (รักกัน)" หรือ "ชง (ตีกัน)" กับเสาไหนในดวงคุณครับ!</p>
                     </div>
-
                 </div>
             </div>
         </div>

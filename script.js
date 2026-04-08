@@ -1260,9 +1260,13 @@ function closeGlossary() {
     document.getElementById('glossary-modal').style.display = "none"; 
 }
 
-// 🌟 Unminified AI and Utils Functions 🌟
+// 🌟 Unminified AI and Utils Functions (พร้อมแอนิเมชันเซียมซี) 🌟
 
 function getDailyHoroscope() {
+    if (!currentBaZiData || !currentBaZiData.day) {
+        return alert("กรุณากด 'คำนวณผูกดวง' เพื่อให้ระบบทราบดวงชะตาก่อนเสี่ยงเซียมซีครับ!");
+    }
+
     const btn = document.getElementById('ai-daily-btn'); 
     const resultBox = document.getElementById('ai-result-box'); 
     const aiContent = document.getElementById('ai-content');
@@ -1272,43 +1276,57 @@ function getDailyHoroscope() {
     const name = document.getElementById('name').value || "ไม่ระบุ"; 
     const cacheKey = `daily_cache_${name}_${new Date().toISOString().split('T')[0]}`;
     
-    if (localStorage.getItem(cacheKey)) { 
-        resultBox.style.display = "block"; 
-        aiContent.innerHTML = localStorage.getItem(cacheKey); 
-        return; 
-    }
-    
-    btn.innerText = "⏳ สับติ้วเซียมซี..."; 
+    btn.innerText = "⏳ กำลังสับติ้วเซียมซี..."; 
     btn.disabled = true; 
     resultBox.style.display = "block"; 
-    aiContent.innerHTML = `<div style="text-align:center;">กำลังวิเคราะห์พลังงานในวันนี้เทียบกับดวงเกิดของคุณ... ⏳</div>`;
     
-    const payload = { 
-        action: "daily", 
-        personal_info: { name: name }, 
-        bazi_results: currentBaZiData, 
-        current_time: currentTimeData 
-    };
+    aiContent.innerHTML = `
+        <div class="siamsee-wrapper">
+            <div class="siamsee-container">
+                <div class="siamsee-stick">🥢</div>
+                <div class="siamsee-tube">🎋</div>
+            </div>
+            <div style="font-size: 18px; color: #ff9800; font-weight: bold; margin-top: 15px; animation: pulse 1s infinite;">เขย่าเซียมซีเชื่อมพลังฟ้าดิน...</div>
+            <p style="font-size: 13px; color: #777; margin-top: 5px;">(กำลังนำดวงของคุณทาบกับเวลาปัจจุบัน)</p>
+        </div>
+    `;
     
-    fetch(API_URL, { 
-        method: 'POST', 
-        body: JSON.stringify(payload) 
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.result === "success") { 
-            localStorage.setItem(cacheKey, data.analysis); 
-            aiContent.innerHTML = data.analysis; 
+    const fetchPromise = new Promise((resolve) => {
+        if (localStorage.getItem(cacheKey)) {
+            resolve({ result: "success", analysis: localStorage.getItem(cacheKey) });
         } else {
-            aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
+            const payload = { action: "daily", personal_info: { name: name }, bazi_results: currentBaZiData, current_time: currentTimeData };
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(r => r.json())
+            .then(data => {
+                if (data.result === "success") localStorage.setItem(cacheKey, data.analysis);
+                resolve(data);
+            })
+            .catch(e => resolve({ result: "error", message: "ไม่สามารถเชื่อมต่อซินแสได้ในขณะนี้" }));
         }
-        btn.innerText = "🥠 เซียมซีทำนายรายวัน"; 
-        btn.disabled = false;
-    })
-    .catch(e => { 
-        aiContent.innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`; 
-        btn.innerText = "🥠 เซียมซีทำนายรายวัน"; 
-        btn.disabled = false; 
+    });
+
+    const timerPromise = new Promise(r => setTimeout(r, 2000));
+
+    Promise.all([fetchPromise, timerPromise]).then(values => {
+        const data = values[0];
+        
+        aiContent.innerHTML = `
+            <div class="siamsee-wrapper">
+                <div class="siamsee-pop">📜</div>
+                <div style="font-size: 18px; color: #4caf50; font-weight: bold; margin-top: 10px;">ได้ไม้ติ้วแล้ว! กำลังคลี่อ่านคำทำนาย...</div>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            if (data.result === "success") {
+                aiContent.innerHTML = `<h3 style="color:#ff9800; border-bottom:2px solid #ffb300; padding-bottom:10px; margin-top:0;">🥠 คำทำนายเซียมซีประจำวัน</h3>` + data.analysis;
+            } else {
+                aiContent.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`;
+            }
+            btn.innerText = "🥠 เซียมซีทำนายรายวัน"; 
+            btn.disabled = false;
+        }, 1200);
     });
 }
 

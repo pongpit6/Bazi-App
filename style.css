@@ -172,6 +172,8 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .advice-box { padding: 8px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; line-height: 1.4; }
 .advice-good { background-color: #e8f5e9; border-left: 3px solid #4caf50; color: #1b5e20; }
 .advice-bad { background-color: #ffebee; border-left: 3px solid #f44336; color: #b71c1c; }
+.tutorial-step { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+.tutorial-step:last-child { border-bottom: none; }
 
 /* 📱 Responsive Mobile Adjustments 📱 */
 @media (max-width: 600px) {
@@ -180,12 +182,11 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
     .flex-mobile-col { flex-direction: column; }
     .form-section input, .form-section select { width: 100%; }
     
-    /* ให้ตาราง 4 เสาเลื่อนปัดซ้ายขวาได้ ไม่บีบอัด */
     .mobile-scroll { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 15px; scrollbar-width: none; }
     .mobile-scroll::-webkit-scrollbar { display: none; }
-    .mobile-scroll .pillar { flex: 0 0 100px; } /* ล็อกความกว้างเสาไว้ที่ไม่ต่ำกว่า 100px */
+    .mobile-scroll .pillar { flex: 0 0 100px; } 
     
-    .grid-buttons { grid-template-columns: 1fr; } /* ปุ่มเรียงแถวเดียวในมือถือ */
+    .grid-buttons { grid-template-columns: 1fr; } 
     .grid-buttons .btn-yellow { grid-column: auto; }
     
     .modal-content { padding: 15px; width: 95%;}

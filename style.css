@@ -31,19 +31,45 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 /* 🌟 Grid Buttons (สำหรับมือถือ) 🌟 */
 .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* 🌟 Bazi Chart Grid 🌟 */
+/* 🌟 Bazi Chart Grid (ปรับใหม่ เป็น Grid 4 คอลัมน์ตายตัว) 🌟 */
 .capture-box { background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px; transition: background 0.3s; }
-.bazi-grid { display: flex; flex-direction: row; justify-content: space-around; text-align: center; margin-top: 10px; padding-bottom: 10px;}
+.bazi-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 10px; 
+    width: 100%; 
+    text-align: center; 
+    margin-top: 10px; 
+    padding-bottom: 10px;
+}
 .current-time-grid { background-color: #f1f8e9; padding-top: 15px; border-radius: 10px; border: 1px solid #c8e6c9; border-bottom: none; margin-bottom: 20px; position: relative; overflow: hidden;}
 .current-time-grid::before { content: ""; position: absolute; top:0; left:0; right:0; bottom:0; border: 3px solid rgba(76, 175, 80, 0.2); border-radius: 10px; pointer-events: none; animation: pulseGlow 3s infinite; }
 @keyframes pulseGlow { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
-.pillar { display: flex; flex-direction: column; align-items: center; }
+.pillar { display: flex; flex-direction: column; align-items: center; width: 100%; }
 .pillar h3 { margin-bottom: 10px; font-size: 14.5px; color: #555; }
 
-.box { width: 85px; min-height: 105px; padding: 8px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #ddd; margin-bottom: 10px; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; gap: 3px; background: #fff; position: relative;}
+/* 🌟 Box 4 เสา (กำหนดความสูงคงที่ และล็อกดาวพิเศษไว้ล่างสุด) 🌟 */
+.box { 
+    width: 100%; 
+    max-width: 85px; 
+    height: 135px; /* ล็อกความสูงการ์ดให้เท่ากันทุกใบ */
+    padding: 8px 2px 28px 2px; /* เว้นที่ว่างด้านล่าง 28px ไว้ให้ดาวพิเศษมาเกาะ */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: flex-start; /* ให้ข้อความเรียงชิดบนสุดเสมอ */
+    border: 2px solid #ddd; 
+    margin-bottom: 10px; 
+    cursor: pointer; 
+    border-radius: 8px; 
+    transition: all 0.2s ease; 
+    gap: 3px; 
+    background: #fff; 
+    position: relative; /* สำคัญมาก สำหรับให้ดาวพิเศษเกาะแบบ absolute */
+}
 .box:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.15); z-index: 5; }
-.char { font-size: 28px; font-weight: bold; }
+.char { font-size: 28px; font-weight: bold; line-height: 1.1; }
 .icon { font-size: 18px; }
 
 .fav-element { border-top: 5px solid #4caf50 !important; }
@@ -74,8 +100,19 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .luck-shishen { font-size: 12.5px; font-weight: bold; color: #d32f2f; margin-bottom: 6px; padding: 3px 8px; background-color: #ffebee; border-radius: 6px; border: 1px solid #ffcdd2; display: inline-block; position: relative;}
 .dishi-badge { font-size: 11px; color: #fff; background: #607d8b; padding: 2px 6px; border-radius: 10px; margin-top: 4px; }
 .nayin-text { font-size: 11px; color: #757575; margin-top: 4px; font-style: italic;}
-.kongwang-badge { position: absolute; top: -8px; right: -8px; background: #fff; border-radius: 50%; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-.star-badges-container { display: flex; gap: 3px; justify-content: center; margin-top: 5px; flex-wrap: wrap; max-width: 80px;}
+.kongwang-badge { position: absolute; top: -8px; right: -8px; background: #fff; border-radius: 50%; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 15; }
+
+/* 🌟 ดาวพิเศษ (ตรึงไว้ก้นกล่อง) 🌟 */
+.star-badges-container { 
+    position: absolute; 
+    bottom: 5px; 
+    left: 0; 
+    right: 0; 
+    display: flex; 
+    gap: 3px; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+}
 .star-badge { font-size: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 1px solid #eee; }
 .vault-badge { background: #fff8e1; border: 1px solid #ffb300; } 
 
@@ -94,12 +131,12 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 }
 .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
 
-/* 🌟 Luck Pillars 🌟 */
+/* 🌟 Luck Pillars (วัยจร/ปีจร ให้เลื่อนซ้ายขวาตามเดิม) 🌟 */
 .luck-grid { display: flex; overflow-x: auto; gap: 15px; padding: 15px 5px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
 .luck-pillar { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; min-width: 90px; }
 .luck-pillar .age-label { font-weight: bold; color: #d32f2f; margin-bottom: 5px; font-size: 14px; }
 .luck-pillar .year-label { font-size: 12px; color: #777; margin-top: 5px; }
-.luck-pillar .box { width: 75px; min-height: 90px; margin-bottom: 5px; cursor: default; }
+.luck-pillar .box { width: 75px; height: 110px; margin-bottom: 5px; cursor: default; } /* ปรับ height วัยจร */
 .time-warp-btn { margin-top: 5px; font-size: 11px; padding: 4px 8px; background: #3f51b5; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;}
 
 .luck-interaction { font-size: 11px; margin-top: 8px; line-height: 1.4; min-height: 30px; text-align: left; width: 100%; background: #fff; padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
@@ -175,69 +212,50 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .tutorial-step { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
 .tutorial-step:last-child { border-bottom: none; }
 
-/* 📱 Responsive Mobile Adjustments 📱 */
+/* 🌟 Siamsee Animation (เซียมซี) 🌟 */
+.siamsee-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.siamsee-container { position: relative; display: inline-block; height: 100px; width: 80px; }
+.siamsee-tube { font-size: 80px; position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; animation: shake-tube 0.15s infinite alternate; transform-origin: bottom center; }
+.siamsee-stick { font-size: 50px; position: absolute; bottom: 20px; left: 15px; z-index: 1; animation: shake-stick 0.15s infinite alternate; }
+@keyframes shake-tube { 0% { transform: rotate(-10deg); } 100% { transform: rotate(10deg); } }
+@keyframes shake-stick { 0% { transform: rotate(-5deg) translateY(0px); } 100% { transform: rotate(15deg) translateY(-20px); } }
+.siamsee-pop { font-size: 60px; animation: popOut 0.5s ease-out forwards; }
+@keyframes popOut { 0% { transform: scale(0.5) translateY(20px) rotate(-20deg); opacity: 0; } 80% { transform: scale(1.2) translateY(-10px) rotate(10deg); opacity: 1; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } }
+
+/* 📱 Responsive Mobile Adjustments (จัดเลย์เอาต์บังคับ 4 เสาลงจอเดียว) 📱 */
 @media (max-width: 600px) {
     .container { padding: 15px; }
     .flex-mobile { flex-direction: column; align-items: stretch; }
     .flex-mobile-col { flex-direction: column; }
     .form-section input, .form-section select { width: 100%; }
     
-    .mobile-scroll { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 15px; scrollbar-width: none; }
-    .mobile-scroll::-webkit-scrollbar { display: none; }
-    .mobile-scroll .pillar { flex: 0 0 100px; } 
+    /* ยกเลิกการปัดซ้าย-ขวา บังคับให้เป็น Grid เหมือน Desktop */
+    .bazi-grid { gap: 5px; }
+    .mobile-scroll { overflow-x: visible; padding-bottom: 5px; }
+    
+    /* ย่อขนาดเนื้อหาในกล่อง 4 เสา ให้พอดีกับจอมือถือ */
+    .box { 
+        height: 115px; 
+        padding: 5px 1px 22px 1px; 
+        border-width: 1.5px;
+        margin-bottom: 5px;
+    }
+    .box .char { font-size: 20px !important; }
+    .box .icon { font-size: 14px !important; }
+    .box span:not(.char):not(.icon) { font-size: 9px !important; line-height: 1.1; letter-spacing: -0.5px; }
+    .box div[title] { width: 5px !important; height: 5px !important; } /* ย่อจุดสีธาตุแฝง */
+    
+    .pillar h3 { font-size: 11px; margin-bottom: 5px; letter-spacing: -0.5px; }
+    .luck-shishen { font-size: 10px; padding: 2px 4px; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .dishi-badge { font-size: 9px; padding: 2px 4px; letter-spacing: -0.5px; }
+    .nayin-text { font-size: 9px; letter-spacing: -0.5px; }
+    
+    .star-badge { width: 14px; height: 14px; font-size: 8px; }
+    .kongwang-badge { font-size: 11px; top: -5px; right: -5px; }
     
     .grid-buttons { grid-template-columns: 1fr; } 
     .grid-buttons .btn-yellow { grid-column: auto; }
     
     .modal-content { padding: 15px; width: 95%;}
     .sticky-chart { margin: -15px -15px 20px -15px; border-radius: 0; }
-}
-/* 🌟 Siamsee Animation (เซียมซี) 🌟 */
-.siamsee-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-.siamsee-container {
-    position: relative;
-    display: inline-block;
-    height: 100px;
-    width: 80px;
-}
-.siamsee-tube {
-    font-size: 80px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    animation: shake-tube 0.15s infinite alternate;
-    transform-origin: bottom center;
-}
-.siamsee-stick {
-    font-size: 50px;
-    position: absolute;
-    bottom: 20px;
-    left: 15px;
-    z-index: 1;
-    animation: shake-stick 0.15s infinite alternate;
-}
-@keyframes shake-tube {
-    0% { transform: rotate(-10deg); }
-    100% { transform: rotate(10deg); }
-}
-@keyframes shake-stick {
-    0% { transform: rotate(-5deg) translateY(0px); }
-    100% { transform: rotate(15deg) translateY(-20px); }
-}
-.siamsee-pop {
-    font-size: 60px;
-    animation: popOut 0.5s ease-out forwards;
-}
-@keyframes popOut {
-    0% { transform: scale(0.5) translateY(20px) rotate(-20deg); opacity: 0; }
-    80% { transform: scale(1.2) translateY(-10px) rotate(10deg); opacity: 1; }
-    100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
 }

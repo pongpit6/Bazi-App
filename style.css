@@ -10,12 +10,14 @@ body { font-family: sans-serif; background-color: #f4f4f9; padding: 15px; color:
 .theme-neutral { box-shadow: 0 6px 15px rgba(0,0,0,0.08); border: 2px solid transparent; }
 
 /* 🌟 Buttons & Inputs 🌟 */
-input, select, button { padding: 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; }
+input, select, button { padding: 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; outline: none; transition: border-color 0.3s; }
+input:focus, select:focus { border-color: #1565c0; box-shadow: 0 0 5px rgba(21, 101, 192, 0.2); }
 .form-section { display: flex; gap: 10px; margin-bottom: 25px; }
 .flex-mobile { display: flex; gap: 10px; align-items: center; }
 
-button { border: none; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
-button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.15); }
+button { border: none; cursor: pointer; font-weight: bold; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); color: white; }
+button:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+button:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .btn-primary { background-color: #1565c0; }
 .btn-danger { background-color: #d32f2f; }
 .btn-teal { background-color: #009688; }
@@ -38,7 +40,7 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* 🌟 Bazi Chart Grid (ปรับใหม่ เป็น Grid 4 คอลัมน์ตายตัว) 🌟 */
-.capture-box { background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px; transition: background 0.3s; }
+.capture-box { background: #ffffff; padding: 15px; border-radius: 10px; margin-bottom: 20px; transition: background 0.3s; position: relative;}
 .bazi-grid { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
@@ -69,12 +71,12 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
     margin-bottom: 10px; 
     cursor: pointer; 
     border-radius: 8px; 
-    transition: all 0.2s ease; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
     gap: 3px; 
     background: #fff; 
     position: relative; /* สำคัญมาก สำหรับให้ดาวพิเศษเกาะแบบ absolute */
 }
-.box:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.15); z-index: 5; }
+.box:hover { transform: scale(1.05); box-shadow: 0 6px 12px rgba(0,0,0,0.15); z-index: 10; }
 .char { font-size: 28px; font-weight: bold; line-height: 1.1; }
 .icon { font-size: 18px; }
 
@@ -122,7 +124,7 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .star-badge { font-size: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 1px solid #eee; }
 .vault-badge { background: #fff8e1; border: 1px solid #ffb300; } 
 
-/* 🌟 ป้ายราก (Rooting Badges) 🌟 */
+/* 🌟 ป้ายราก (Rooting Badges) & ภาคีซ่อน 🌟 */
 .root-badge-container {
     animation: fadeInRoot 0.5s ease-out;
 }
@@ -131,28 +133,47 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
     100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
+/* คลาสเตรียมไว้สำหรับตกแต่งกล่อง Hidden Combo สวยๆ ในอนาคต (แทน Inline style) */
+.hidden-combo-item {
+    background-color: #fdfbfd;
+    border-left: 4px solid #ab47bc;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 4px 8px 8px 4px;
+    font-size: 14px;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.hidden-combo-item:hover {
+    background-color: #f3e5f5;
+    box-shadow: 0 4px 8px rgba(171, 71, 188, 0.15);
+    transform: translateX(3px);
+}
+
 /* 🌟 Tooltips 🌟 */
 .tooltip-container { position: relative; cursor: help; display: inline-block; }
 .tooltip-text {
     visibility: hidden; width: 220px; background-color: rgba(30, 30, 30, 0.95); color: #fff;
     text-align: center; border-radius: 6px; padding: 8px 12px; position: absolute;
-    z-index: 9999; bottom: 125%; left: 50%; transform: translateX(-50%);
-    opacity: 0; transition: opacity 0.3s; font-size: 12.5px; font-weight: normal; line-height: 1.5;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none; white-space: pre-wrap;
+    z-index: 9999; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px);
+    opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 12.5px; font-weight: normal; line-height: 1.5;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); pointer-events: none; white-space: pre-wrap;
 }
 .tooltip-text::after {
     content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
     border-width: 5px; border-style: solid; border-color: rgba(30, 30, 30, 0.95) transparent transparent transparent;
 }
-.tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+.tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* 🌟 Luck Pillars (วัยจร/ปีจร ให้เลื่อนซ้ายขวาตามเดิม) 🌟 */
 .luck-grid { display: flex; overflow-x: auto; gap: 15px; padding: 15px 5px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
-.luck-pillar { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; min-width: 90px; }
+.luck-pillar { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid #eee; min-width: 90px; position: relative;}
 .luck-pillar .age-label { font-weight: bold; color: #d32f2f; margin-bottom: 5px; font-size: 14px; }
 .luck-pillar .year-label { font-size: 12px; color: #777; margin-top: 5px; }
 .luck-pillar .box { width: 75px; height: 110px; margin-bottom: 5px; cursor: default; } /* ปรับ height วัยจร */
-.time-warp-btn { margin-top: 5px; font-size: 11px; padding: 4px 8px; background: #3f51b5; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;}
+.time-warp-btn { margin-top: 5px; font-size: 11px; padding: 4px 8px; background: #3f51b5; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; transition: 0.2s; }
+.time-warp-btn:hover { background: #303f9f; }
 
 .luck-interaction { font-size: 11px; margin-top: 8px; line-height: 1.4; min-height: 30px; text-align: left; width: 100%; background: #fff; padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
 .interact-bad { color: #d32f2f; font-weight: 600; margin-bottom: 2px;}
@@ -171,17 +192,18 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
 .cal-header { font-weight: bold; text-align: center; color: #555; font-size: 13px; padding-bottom: 5px; border-bottom: 1px solid #ccc; }
 .cal-day { padding: 10px 5px; text-align: center; border-radius: 6px; border: 1px solid #eee; background: #fff; cursor: pointer; font-size: 13px; display: flex; flex-direction: column; gap: 3px; position: relative; transition: 0.2s;}
-.cal-day:hover { transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 2; }
+.cal-day:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2; }
 .cal-day.empty { background: transparent; border: none; cursor: default; pointer-events: none;}
 .cal-date-num { font-weight: bold; font-size: 14px; }
 .cal-zhi { font-size: 11px; color: #777; }
 .cal-good { background-color: #e8f5e9; border-color: #81c784; }
 .cal-bad { background-color: #ffebee; border-color: #e57373; }
 .cal-vault { background-color: #fff8e1; border-color: #ffd54f; }
-.cal-today { box-shadow: inset 0 0 0 2px #2196f3; }
+.cal-today { box-shadow: inset 0 0 0 2px #2196f3; font-weight: bold; }
 
 /* 🌟 Meeting Planner Table 🌟 */
-.planner-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+.planner-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #eee; transition: background 0.2s; }
+.planner-item:hover { background-color: rgba(0,0,0,0.02); }
 .planner-item:last-child { border-bottom: none; }
 .planner-time { width: 95px; font-weight: bold; font-size: 13px; color: #555; }
 .planner-zhi { width: 55px; font-size: 13px; text-align: center; }
@@ -192,31 +214,36 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .planner-item.vault { background-color: rgba(255, 179, 0, 0.08); border-left: 3px solid #ffb300; }
 
 /* 🌟 Modals & Popups 🌟 */
-.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 10px;}
-.modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 10px; backdrop-filter: blur(3px);}
+.modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.4); animation: slideInModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto;}
 .encyclopedia-content { max-width: 650px; background: #fcfcfc; padding: 20px 20px; }
-.close { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888; line-height: 1;}
+.close { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888; line-height: 1; transition: color 0.2s;}
 .close:hover { color: #d32f2f; }
+
+@keyframes slideInModal {
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* 🌟 Tabs UI 🌟 */
 .tab-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 15px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;}
 .tab-container::-webkit-scrollbar { display: none; }
-.tab-link, .tab-link-glos { background: none; border: none; padding: 10px 12px; cursor: pointer; font-size: 14.5px; font-weight: bold; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap;}
-.tab-link:hover, .tab-link-glos:hover { color: #03a9f4; }
+.tab-link, .tab-link-glos { background: none; border: none; padding: 10px 12px; cursor: pointer; font-size: 14.5px; font-weight: bold; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; white-space: nowrap;}
+.tab-link:hover, .tab-link-glos:hover { color: #03a9f4; background-color: rgba(3, 169, 244, 0.05); border-radius: 6px 6px 0 0;}
 .tab-link.active { color: #03a9f4; border-bottom: 3px solid #03a9f4; }
 .tab-link-glos.active { color: #607d8b; border-bottom: 3px solid #607d8b; }
-.tab-content, .tab-content-glos { display: none; animation: fadeIn 0.3s; }
+.tab-content, .tab-content-glos { display: none; animation: fadeInTab 0.4s ease; }
 .tab-content.active, .tab-content-glos.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
 /* 🌟 Misc UI 🌟 */
-.element-chart-container { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+.element-chart-container { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
 .dm-strength-container { background-color: #f8fbff; border: 2px solid #64b5f6; border-radius: 8px; padding: 15px; margin: 0 0 20px 0; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-.encyc-section, .glos-section { background: #fff; border: 1px solid #eee; border-left: 4px solid #03a9f4; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+.encyc-section, .glos-section { background: #fff; border: 1px solid #eee; border-left: 4px solid #03a9f4; padding: 15px; margin-bottom: 15px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
 .glos-section { border-left-color: #607d8b; }
 .encyc-title, .glos-title { font-weight: bold; font-size: 16px; color: #0288d1; margin-bottom: 8px; margin-top: 0; }
 .glos-title { color: #455a64; }
-.encyc-item { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+.encyc-item { margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; line-height: 1.5; }
 .encyc-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 .glos-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13.5px; }
 .glos-table th, .glos-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -271,6 +298,8 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
     .grid-buttons { grid-template-columns: 1fr; } 
     .grid-buttons .btn-yellow { grid-column: auto; }
     
-    .modal-content { padding: 15px; width: 95%;}
-    .sticky-chart { margin: -15px -15px 20px -15px; border-radius: 0; }
+    .modal-content { padding: 15px; width: 95%; max-height: 95vh;}
+    .sticky-chart { margin: -15px -15px 20px -15px; border-radius: 0; padding: 10px; }
+    
+    .tooltip-text { width: 180px; font-size: 11px; }
 }

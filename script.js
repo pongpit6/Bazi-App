@@ -80,7 +80,6 @@ const tenGodsMap = {
 const pillarContextMap = { 'year': 'เสาปี (ผู้ใหญ่/สังคม)', 'month': 'เสาเดือน (การงาน/พ่อแม่)', 'day': 'เสาวัน (คู่ครอง/ตัวตน)', 'hour': 'เสายาม (บั้นปลาย/ลูกน้อง)' };
 const pillarNamesTh = { 'year': 'ปี', 'month': 'เดือน', 'day': 'วัน', 'hour': 'ยาม' };
 
-// ✨ การเปรียบเปรยแบบเจาะจงตามเสา (Context-Aware Impact)
 const clashMetaphors = {
     'year': 'แผ่นดินไหวหน้าบ้าน (การโยกย้าย, ผู้ใหญ่เจ็บป่วย, เปลี่ยนแปลงสภาพแวดล้อม)',
     'month': 'คลื่นใต้น้ำในออฟฟิศ (เปลี่ยนเจ้านาย, โครงสร้างงานเปลี่ยน, พ่อแม่มีปัญหา)',
@@ -94,7 +93,6 @@ const comboMetaphors = {
     'hour': 'คลังเสบียงหลังบ้านเต็ม (โปรเจกต์สำเร็จ, ลูกน้องเกื้อหนุน, ลงทุนงอกเงย)'
 };
 
-// ✨ คำแนะนำมงคลแบบจับต้องได้ (Actionable Advice)
 const actionableAdviceMap = {
     'wood': { color: '🟩 เขียว, อ่อน, ลายไม้', dir: 'ทิศตะวันออก', job: 'การศึกษา, งานเขียน/สิ่งพิมพ์, เฟอร์นิเจอร์, เกษตร, ออกแบบ, พยาบาล' },
     'fire': { color: '🟥 แดง, ส้ม, ชมพู, ม่วง', dir: 'ทิศใต้', job: 'เทคโนโลยี/IT, อาหาร/เครื่องดื่ม, บันเทิง, ความงาม, พลังงาน, การตลาด' },
@@ -162,6 +160,34 @@ const naYinDesc = {
 const iconMap = { 'wood': '🌳', 'fire': '🔥', 'earth': '⛰️', 'metal': '🪙', 'water': '💧' };
 const thTypeMap = {'wood': 'ไม้', 'fire': 'ไฟ', 'earth': 'ดิน', 'metal': 'ทอง', 'water': 'น้ำ'};
 
+// ✨ ฟังก์ชันตรวจสอบราก (Rooting & Floating)
+function checkStemRoot(ganChar, natalZhis) {
+    if (!ganChar || ganChar === '-') return null;
+    const ganType = elementMap[ganChar]?.type;
+    if (!ganType) return null;
+
+    let hasRoot = false;
+    let rootZhis = [];
+
+    natalZhis.forEach(zhiItem => {
+        const zhiChar = zhiItem.char;
+        if (!zhiChar || zhiChar === '-') return;
+        const hiddenGans = hiddenGanMap[zhiChar] || [];
+        // เช็คว่าในราศีแฝง มีธาตุเดียวกับราศีบนหรือไม่
+        const hasSameElement = hiddenGans.some(hGan => elementMap[hGan]?.type === ganType);
+        if (hasSameElement) {
+            hasRoot = true;
+            rootZhis.push(zhiItem.pillar);
+        }
+    });
+
+    return {
+        hasRoot: hasRoot,
+        isFloating: !hasRoot,
+        rootLocations: rootZhis
+    };
+}
+
 function rChar(char) {
     const d = elementMap[char];
     if(!d) return char;
@@ -221,7 +247,8 @@ function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
     return stars;
 }
 
-function getBoxInnerHtml(char, contextStars = [], isKongWang = false) {
+// ✨ ปรับปรุงให้รับ rootStatus เข้ามา
+function getBoxInnerHtml(char, contextStars = [], isKongWang = false, rootStatus = null) {
     if (char === '-') return `<span class="char" style="color:#ccc;">-</span><span style="font-size:10px; color:#ccc; margin-top:5px;">(ไม่ระบุ)</span>`;
     
     const data = elementMap[char] || { type: '', icon: '', thName: '' };
@@ -255,9 +282,21 @@ function getBoxInnerHtml(char, contextStars = [], isKongWang = false) {
     if (isKongWang) {
         html += `<div class="kongwang-badge tooltip-container">🕳️<span class="tooltip-text"><b>ติดคงบ้วง (สูญสิ้น)</b><br>พลังงานเสานี้ถูกลดทอนลง ว่างเปล่า</span></div>`;
     }
+
+    // ✨ ส่วนเสริมแสดงป้าย "ราก" เฉพาะราศีบน
+    if (rootStatus) {
+        if (rootStatus.hasRoot) {
+            let locText = rootStatus.rootLocations.map(p => pillarNamesTh[p]).join(', ');
+            html += `<div class="tooltip-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#e8f5e9; color:#2e7d32; padding:2px 4px; border-radius:4px; border:1px solid #4caf50;">🌱 มีราก</span><span class="tooltip-text" style="bottom:150%;"><b>มีรากฐานมั่นคง</b><br>พบรากในเสา: ${locText}</span></div>`;
+        } else {
+            html += `<div class="tooltip-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#f5f5f5; color:#757575; padding:2px 4px; border-radius:4px; border:1px dashed #9e9e9e;">🍃 ลอยลม</span><span class="tooltip-text" style="bottom:150%;"><b>ลอยปลิวลม (ไร้ราก)</b><br>เป็นเพียงภาพลวงตา หรือพลังงานฉาบฉวย ไม่มั่นคง</span></div>`;
+        }
+    }
+
     return html;
 }
 
+// ✨ ปรับปรุงให้คำนวณหารากตอนวาดกล่อง
 function renderBox(elementId, chineseChar, type, isEarth = false) {
     const box = document.getElementById(elementId);
     if (!box) return;
@@ -274,6 +313,8 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
 
     const data = elementMap[chineseChar] || { type: '' };
     let stars = []; let isKw = false;
+    let rootStatus = null; // สถานะราก
+
     if (isEarth) {
         if (currentBaZiData.day && currentBaZiData.day.gan !== '-') {
             stars = checkSpecialStars(chineseChar, currentBaZiData.day.gan, currentBaZiData.year.zhi, currentBaZiData.day.zhi);
@@ -281,9 +322,20 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
         if (currentKongWang && currentKongWang.includes(chineseChar)) {
             isKw = true;
         }
+    } else {
+        // ✨ ถ้าเป็นราศีบน (Heaven) และเป็นดวงกำเนิด (Natal) ให้เช็คราก
+        if (type === 'natal' && currentBaZiData.day && currentBaZiData.day.gan !== '-') {
+            const natalZhis = [
+                { pillar: 'year', char: currentBaZiData.year.zhi },
+                { pillar: 'month', char: currentBaZiData.month.zhi },
+                { pillar: 'day', char: currentBaZiData.day.zhi },
+                { pillar: 'hour', char: currentBaZiData.hour.zhi }
+            ];
+            rootStatus = checkStemRoot(chineseChar, natalZhis);
+        }
     }
     
-    box.innerHTML = getBoxInnerHtml(chineseChar, stars, isKw);
+    box.innerHTML = getBoxInnerHtml(chineseChar, stars, isKw, rootStatus);
     box.style.cursor = 'pointer';
 
     if(data.type) {
@@ -342,7 +394,7 @@ function updateShiShenLabels(dataObj, prefix, dayGan) {
         if (naYinEl) {
             if (dataObj[p].naYin && dataObj[p].naYin !== '-') {
                 let nayinName = dataObj[p].naYin;
-                let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'น้ำ' : nayinName.includes('火') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
+                let nyElement = nayinName.includes('金') ? 'ทอง' : nayinName.includes('木') ? 'ไม้' : nayinName.includes('水') ? 'ไฟ' : nayinName.includes('土') ? 'ดิน' : '';
                 let nyDesc = naYinDesc[nyElement] || 'พลังธาตุแฝง (เสียง) บ่งบอกบรรยากาศที่แท้จริง';
                 naYinEl.innerHTML = `อิมเจีย: ${nyElement}<span class="tooltip-text" style="width:250px;"><b>🎶 อิมเจีย: ${nayinName} (ธาตุ${nyElement})</b><br>${nyDesc}</span>`;
             } else {
@@ -403,7 +455,6 @@ function calculateDMStrength() {
     const supportType = generatingMap[dmType];
     const weakeningTypes = exhaustingMap[dmType];
     
-    // ปรับน้ำหนักกรณีไม่ทราบเวลาเกิด (Total Score จะน้อยลง เราจะเทียบสัดส่วนให้เป็น 100%)
     let weights = { monthZhi: 40, dayZhi: 15, yearZhi: 10, hourZhi: 10, monthGan: 10, yearGan: 8, hourGan: 7 };
     let totalWeightPossibility = isTimeUnknown ? 83 : 100;
     
@@ -435,7 +486,6 @@ function calculateDMStrength() {
         }
     });
 
-    // Normalize score to 100
     let score = Math.round((rawScore / totalWeightPossibility) * 100);
 
     let weakeningTh = weakeningTypes.map(t => thTypeMap[t]).join(', ');
@@ -492,11 +542,9 @@ function calculateDMStrength() {
     dmBox.innerHTML = dmHtml; 
     dmBox.style.display = "block";
 
-    // ✨ Render Actionable Advice
     renderActionableAdvice(favArr);
 }
 
-// ✨ ฟีเจอร์ใหม่: สร้างคำแนะนำภาคปฏิบัติ
 function renderActionableAdvice(favArr) {
     const adviceBox = document.getElementById('actionable-advice-box');
     let html = `<h3 style="margin-top:0; color:#1b5e20; font-size:16px; margin-bottom:10px;">🎯 คำแนะนำมงคล (เสริมดวงประจำตัว)</h3>`;
@@ -504,15 +552,12 @@ function renderActionableAdvice(favArr) {
     
     html += `<ul style="margin:0; padding-left:20px; font-size:13.5px; line-height:1.6;">`;
     
-    // รวมสีมงคล
     let colors = favArr.map(t => actionableAdviceMap[t].color).join(', ');
     html += `<li style="margin-bottom:5px;"><b>👕 สีมงคล:</b> ${colors} (ใส่เสื้อผ้า, รถ, ของใช้ประจำตัว)</li>`;
     
-    // รวมทิศมงคล
     let dirs = favArr.map(t => actionableAdviceMap[t].dir).join(', ');
     html += `<li style="margin-bottom:5px;"><b>🧭 ทิศส่งเสริม:</b> ${dirs} (หันหัวนอน หรือนั่งทำงานหันหน้าไปทิศนี้)</li>`;
 
-    // รวมอาชีพ
     let jobs = favArr.map(t => actionableAdviceMap[t].job).join(', ');
     html += `<li style="margin-bottom:5px;"><b>💼 สายอาชีพ/ธุรกิจ:</b> ${jobs}</li>`;
     
@@ -521,7 +566,6 @@ function renderActionableAdvice(favArr) {
     adviceBox.style.display = 'block';
 }
 
-// ✨ ฟีเจอร์ใหม่: ระบบตามล่าจิ๊กซอว์ (Missing Puzzle Tracker)
 function checkMissingPuzzles() {
     if (!currentBaZiData.day || currentBaZiData.day.gan === '-') return;
 
@@ -957,7 +1001,6 @@ function closePopup() {
     document.getElementById('popup-modal').style.display = "none"; 
 }
 
-// ✨ อัปเดต Get Interaction HTML เพื่อดึง Metaphors
 function getInteractionHTML(gan, zhi) {
     let res = [];
     if (!currentBaZiData.day || currentBaZiData.day.gan === '-') return `<div class="luck-interaction interact-none">(ไม่มีปะทะ)</div>`;
@@ -1047,9 +1090,9 @@ function calculateBaZi() {
     
     if (!dateInput) return alert("กรุณากรอกวันที่เกิดให้ครบถ้วนครับ (เวลาเกิดสามารถเว้นว่างได้)");
 
-    isTimeUnknown = (!timeInput); // ✨ ถ้าไม่มีเวลาเข้าเงื่อนไขนี้
+    isTimeUnknown = (!timeInput); 
     const [y, m, d] = dateInput.split('-'); 
-    let h = 12, min = 0; // สมมติเป็นเที่ยงวันเพื่อไม่ให้ข้ามวัน
+    let h = 12, min = 0; 
     if (!isTimeUnknown) {
         [h, min] = timeInput.split(':');
     }
@@ -1060,7 +1103,6 @@ function calculateBaZi() {
     
     currentKongWang = bazi.getDayXunKong();
 
-    // ✨ จัดการเรื่องเสายามที่อาจเป็น Null
     currentBaZiData = {
         gender: genderInput,
         year: { gan: bazi.getYearGan(), zhi: bazi.getYearZhi(), naYin: bazi.getYearNaYin(), diShi: bazi.getYearDiShi() },
@@ -1070,7 +1112,7 @@ function calculateBaZi() {
     };
 
     currentVaults = calculateVaults(currentBaZiData.day.gan);
-    calculateDMStrength(); // ✨ มีการปรับน้ำหนักคะแนนแล้วในนี้
+    calculateDMStrength(); 
 
     ['year', 'month', 'day', 'hour'].forEach(p => {
         renderBox(`${p}-heaven`, currentBaZiData[p].gan, 'natal', false);
@@ -1079,7 +1121,7 @@ function calculateBaZi() {
 
     updateShiShenLabels(currentBaZiData, '', currentBaZiData.day.gan);
     renderElementChart(); 
-    checkMissingPuzzles(); // ✨ ตามล่าจิ๊กซอว์
+    checkMissingPuzzles(); 
     renderCurrentTimeBaZi();
 
     const currentYear = new Date().getFullYear();
@@ -1096,7 +1138,7 @@ function calculateBaZi() {
     const currentLYear = Solar.fromYmd(currentYear, 6, 1).getLunar();
     activeLiuNianData = { gan: currentLYear.getYearGan(), zhi: currentLYear.getYearZhi(), year: currentYear };
 
-    renderLuck(solar, genderInput === 'ชาย' ? 1 : 0, currentAge); // ส่งอายุเข้าไปด้วยเพื่อไฮไลต์วัยจร
+    renderLuck(solar, genderInput === 'ชาย' ? 1 : 0, currentAge);
 
     document.getElementById('ai-result-box').style.display = "none";
     document.getElementById('custom-question-box').style.display = "block"; 
@@ -1127,7 +1169,6 @@ function renderLuck(solar, genderNum, currentAge) {
         let desc = shiShenDesc[tenGodTh] || '';
         let isKw = currentKongWang.includes(zhi);
 
-        // ✨ ไฮไลต์วัยจรปัจจุบัน
         let isCurrentDaYun = (currentAge >= dy.getStartAge() && currentAge < dy.getStartAge() + 10);
         let extraStyle = isCurrentDaYun ? 'box-shadow: 0 0 10px #4caf50; border: 2px solid #4caf50;' : '';
         let currentLabel = isCurrentDaYun ? `<div style="background:#4caf50; color:white; font-size:10px; padding:2px 5px; border-radius:10px; margin-bottom:5px; animation: pulse 2s infinite;">📍 วัยจรปัจจุบัน</div>` : '';
@@ -1148,7 +1189,6 @@ function renderLuck(solar, genderNum, currentAge) {
     const liuNianContainer = document.getElementById('liu-nian-list');
     liuNianContainer.innerHTML = '';
     
-    // ✨ สร้างเรดาร์ 5 ปีล่วงหน้า
     let radarHtml = `<ul style="list-style-type:none; padding:0; margin:0; font-size:14px; line-height:1.7;">`;
 
     for (let i = 0; i < 10; i++) {
@@ -1178,7 +1218,6 @@ function renderLuck(solar, genderNum, currentAge) {
                 <button class="time-warp-btn" onclick="travelToYear(${tYear})">⏳ วาร์ป</button>
             </div>`;
 
-        // ✨ ประมวลผลเรดาร์ 5 ปีแรก
         if (i < 5) {
             let radarEvents = [];
             if (yZhi === currentVaults.wealthVault) radarEvents.push(`<span style="color:#f57f17; font-weight:bold;">💰 รับทรัพย์ (เปิดคลังสมบัติ)</span>`);
@@ -1198,7 +1237,6 @@ function renderLuck(solar, genderNum, currentAge) {
     document.getElementById('five-year-radar-box').innerHTML = radarHtml;
 }
 
-// 🌟 Functions for Tutorial 🌟
 function openTutorial() {
     document.getElementById('tutorial-modal').style.display = "flex";
 }
@@ -1206,7 +1244,6 @@ function closeTutorial() {
     document.getElementById('tutorial-modal').style.display = "none";
 }
 
-// 🌟 Functions for Encyclopedia Tabs 🌟
 function openEncycTab(evt, tabName) {
     let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content");
@@ -1320,6 +1357,42 @@ function openEncyclopedia() {
     }
     html += `</div></div>`;
 
+    // ✨ เพิ่มแท็บ กำลังรากฐาน (Rooting)
+    html += `<div id="tab-roots" class="tab-content" style="display:none;">`;
+    html += `<div class="encyc-section"><h3 class="encyc-title">🌱 กำลังรากฐาน (Rooting Analysis)</h3>`;
+    html += `<p style="font-size:13.5px; color:#555;">วิเคราะห์ความมั่นคงของสิบเทพที่ปรากฏบนราศีบน ว่าเป็น "ของจริงที่จับต้องได้" หรือ "ภาพลวงตาที่ฉาบฉวย"</p>`;
+
+    let rootDetails = '';
+    const natalZhis = [
+        { pillar: 'year', char: currentBaZiData.year.zhi },
+        { pillar: 'month', char: currentBaZiData.month.zhi },
+        { pillar: 'day', char: currentBaZiData.day.zhi },
+        { pillar: 'hour', char: currentBaZiData.hour.zhi }
+    ];
+
+    ['year', 'month', 'day', 'hour'].forEach(p => {
+        const gan = currentBaZiData[p].gan;
+        if (gan === '-') return;
+        
+        const rootInfo = checkStemRoot(gan, natalZhis);
+        const tenGodCh = tenGodsMap[dmGan][gan];
+        const shiShen = (p === 'day') ? 'ดิถี (ตัวคุณ)' : (shiShenMap[tenGodCh] || tenGodCh);
+        
+        rootDetails += `<div class="encyc-item" style="margin-bottom:12px;">`;
+        rootDetails += `<b>เสา${pillarNamesTh[p]} - ${shiShen} (${gan}):</b><br>`;
+        if (rootInfo.hasRoot) {
+            rootDetails += `<span style="color:#2e7d32;">🌱 <b>มีรากมั่นคง</b> (พบรากในเสา${rootInfo.rootLocations.map(l => pillarNamesTh[l]).join(', ')})</span><br>`;
+            rootDetails += `<span style="font-size:13px;">อิทธิพลของ <b>${shiShen}</b> จะเกิดขึ้นจริง จับต้องได้ และยั่งยืน ไม่ล้มหายตายจากไปง่ายๆ</span>`;
+        } else {
+            rootDetails += `<span style="color:#757575;">🍃 <b>ลอยปลิวลม (ไร้ราก)</b></span><br>`;
+            rootDetails += `<span style="font-size:13px;">อิทธิพลของ <b>${shiShen}</b> เป็นเพียงภาพภายนอก ดูเหมือนมีแต่จริงๆ อาจจะรักษาไว้ไม่ได้นาน (เช่น รวยแต่เก็บไม่อยู่ หรือดูมีอำนาจแต่ไม่มีบารมีจริง)</span>`;
+        }
+        rootDetails += `</div>`;
+    });
+
+    html += rootDetails;
+    html += `</div></div>`;
+
     document.getElementById('encyclopedia-detail').innerHTML = html;
     document.getElementById('encyclopedia-modal').style.display = "flex";
     openEncycTab(null, 'tab-basic'); 
@@ -1329,7 +1402,6 @@ function closeEncyclopedia() {
     document.getElementById('encyclopedia-modal').style.display = "none"; 
 }
 
-// 🌟 Functions for Glossary Tabs 🌟
 function openGlosTab(evt, tabName) {
     let i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content-glos");
@@ -1449,6 +1521,24 @@ function openGlossary() {
                 <tr><td>🪙 ธาตุทอง</td><td>${rChar('未')}</td><td>${rChar('戌')}</td><td>${rChar('丑')}</td></tr>
                 <tr><td>💧 ธาตุน้ำ</td><td>${rChar('戌')}</td><td>${rChar('辰')}</td><td>${rChar('丑')}</td></tr>
              </table>
+             </div>`;
+    html += `</div>`;
+
+    // ✨ เพิ่มเนื้อหาเรื่องรากแฝง
+    html += `<div id="glos-roots" class="tab-content-glos" style="display:none;">`;
+    html += `<div class="glos-section"><h3 class="glos-title">🌱 พลังรากแฝง (Rooting & Floating)</h3>
+             <p style="font-size:14px; line-height:1.6;">ในวิชาปาจื้อ <b>"ราศีบน" (สวรรค์)</b> คือสิ่งที่แสดงออกให้คนภายนอกเห็น ส่วน <b>"ราศีล่าง" (พื้นดิน)</b> คือความจริงที่ซ่อนอยู่</p>
+             <ul style="font-size:14px; line-height:1.8;">
+                <li><b style="color:#2e7d32;">🌱 มีราก (Rooted):</b> การที่ราศีบน มีธาตุเดียวกันซ่อนอยู่ใน "ราศีแฝง" ของเสาใดเสาหนึ่งด้านล่าง แปลว่าสิ่งนั้นมีรากฐาน แข็งแรง เป็นของจริง</li>
+                <li><b style="color:#757575;">🍃 ลอยลม (Floating):</b> การที่ราศีบน ไม่มีธาตุเดียวกันซัพพอร์ตอยู่ด้านล่างเลย แปลว่าสิ่งนั้นอ่อนแอ ฉาบฉวย หรือเป็นเพียงภาพลวงตา (เช่น ลาภลอยลม = ได้เงินมาก็ต้องจ่ายออกไป เก็บไม่อยู่)</li>
+             </ul>
+             <p style="font-size:14px; line-height:1.6; margin-top:10px;"><b>วิธีการดูราก (ธาตุตรงกัน):</b><br>
+             - <b>ธาตุไม้</b> (甲, 乙) มีรากเมื่อฐานล่างมี ขาล(寅), เถาะ(卯), มะโรง(辰), มะแม(未), กุน(亥)<br>
+             - <b>ธาตุไฟ</b> (丙, 丁) มีรากเมื่อฐานล่างมี มะเมีย(午), มะเส็ง(巳), ขาล(寅), จอ(戌), มะแม(未)<br>
+             - <b>ธาตุดิน</b> (戊, 己) มีรากเมื่อฐานล่างมี ฉลู(丑), มะโรง(辰), มะแม(未), จอ(戌), มะเมีย(午), มะเส็ง(巳), ขาล(寅), วอก(申)<br>
+             - <b>ธาตุทอง</b> (庚, 辛) มีรากเมื่อฐานล่างมี วอก(申), ระกา(酉), ฉลู(丑), จอ(戌), มะเส็ง(巳)<br>
+             - <b>ธาตุน้ำ</b> (壬, 癸) มีรากเมื่อฐานล่างมี ชวด(子), กุน(亥), ฉลู(丑), มะโรง(辰), วอก(申)
+             </p>
              </div>`;
     html += `</div>`;
 
@@ -1670,7 +1760,6 @@ function downloadBaziImage() {
     btn.innerText = "⏳ กำลังประมวลผลรูปภาพ..."; 
     btn.disabled = true;
     
-    // ✨ แสดงแบรนด์ดิ้งก่อนแคปรูป
     if (branding) branding.style.display = 'block';
 
     const originalBg = captureArea.style.background; 
@@ -1678,7 +1767,7 @@ function downloadBaziImage() {
     
     html2canvas(captureArea, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
         captureArea.style.background = originalBg; 
-        if (branding) branding.style.display = 'none'; // ซ่อนแบรนด์ดิ้งกลับ
+        if (branding) branding.style.display = 'none';
 
         const link = document.createElement('a');
         link.download = `ดวงชะตา_${document.getElementById('name').value || "MyBaZi"}.png`; 

@@ -166,7 +166,6 @@ function getHiddenComboHtml(char, level, pillar, baziData) {
     const pillars = ['year', 'month', 'day', 'hour'];
     
     if (level === 'heaven') {
-        // ราศีบน แอบฮะกับ ราศีแฝง (ฟ้า-ดิน)
         let targetGanCombo = interactions.heavenlyCombos[char]; 
         pillars.forEach(p => {
             if (p === pillar) return;
@@ -178,11 +177,9 @@ function getHiddenComboHtml(char, level, pillar, baziData) {
             }
         });
     } else {
-        // ราศีแฝง แอบฮะกับ ราศีบน หรือ ราศีแฝงอื่น (ล่าง-บน / ล่าง-ล่าง)
         let myHiddenGans = hiddenGanMap[char] || [];
         pillars.forEach(p => {
             if (p === pillar) return;
-            // 1. เช็คกับราศีบนเสาอื่น
             let otherGan = baziData[p].gan;
             if (otherGan !== '-') {
                 myHiddenGans.forEach(mg => {
@@ -191,7 +188,6 @@ function getHiddenComboHtml(char, level, pillar, baziData) {
                     }
                 });
             }
-            // 2. เช็คกับราศีแฝงเสาอื่น
             let otherZhi = baziData[p].zhi;
             if (otherZhi !== '-') {
                 let otherHiddenGans = hiddenGanMap[otherZhi] || [];
@@ -1442,7 +1438,7 @@ function openEncyclopedia() {
     html += rootDetails;
     html += `</div></div>`;
 
-    // ✨ แท็บใหม่: ภาคีซ่อน (Hidden Combos) ✨
+    // ✨ แท็บภาคีซ่อน (Hidden Combos)
     html += `<div id="tab-hidden-combos" class="tab-content" style="display:none;">`;
     html += `<div class="encyc-section"><h3 class="encyc-title" style="color:#9c27b0;">🕵️‍♂️ ภาคีซ่อนเร้น (Hidden Combos)</h3>`;
     html += `<p style="font-size:13.5px; color:#555;">ภาคีซ่อน หรือ "แอบฮะ" คือการเชื่อมโยงอย่างลับๆ ระหว่างธาตุแฝง บ่งบอกถึงความช่วยเหลือลับๆ, รายได้ซ่อนเร้น, หรือความสัมพันธ์ที่ไม่ได้เปิดเผย</p>`;
@@ -1450,7 +1446,6 @@ function openEncyclopedia() {
     let hiddenComboDetails = [];
     const pKeys = ['year', 'month', 'day', 'hour'];
     
-    // สแกน บน-ล่าง (Stem to Branch)
     pKeys.forEach(pTop => {
         let gan = currentBaZiData[pTop].gan;
         if(gan === '-') return;
@@ -1469,7 +1464,6 @@ function openEncyclopedia() {
         });
     });
 
-    // สแกน ล่าง-ล่าง (Branch to Branch hidden combos)
     for(let i=0; i<pKeys.length; i++) {
         for(let j=i+1; j<pKeys.length; j++) {
             let p1 = pKeys[i]; let p2 = pKeys[j];
@@ -1647,7 +1641,6 @@ function openGlossary() {
              </div>`;
     html += `</div>`;
 
-    // ✨ แท็บใหม่: ภาคีซ่อน ในพจนานุกรม
     html += `<div id="glos-hidden-combos" class="tab-content-glos" style="display:none;">`;
     html += `<div class="glos-section"><h3 class="glos-title" style="color:#9c27b0;">🎭 ภาคีซ่อนเร้น (แอบฮะ)</h3>
              <p style="font-size:14px; line-height:1.6;"><b>แอบฮะ (Hidden Combos)</b> คือการที่ "ราศีบน ไปจับคู่กับ ราศีแฝงด้านล่าง" หรือ "ราศีแฝงด้านล่าง จับคู่กันเอง" โดยใช้กฎของ <b>ภาคีฟ้า 5 คู่</b> (甲-己, 乙-庚, 丙-辛, 丁-壬, 戊-癸) ในการจับคู่</p>
@@ -1743,6 +1736,9 @@ function getDailyHoroscope() {
 }
 
 function openSynastryModal() { 
+    if (!currentBaZiData.day || currentBaZiData.day.gan === '-') {
+        return alert("กรุณาคำนวณผูกดวงชะตาของคุณก่อนครับ (เพื่อใช้เป็นแกนหลักในการเทียบดวงสมพงษ์)");
+    }
     document.getElementById('synastry-modal').style.display = "flex"; 
 }
 
@@ -1750,7 +1746,9 @@ function closeSynastryModal() {
     document.getElementById('synastry-modal').style.display = "none"; 
 }
 
+// ✨ อัปเดตลอจิกสมพงษ์ (รวมการโชว์ % Local ทันที + เรียก AI วิเคราะห์)
 function calculateSynastry() {
+    const pName = document.getElementById('partner_name').value || "คนรักของคุณ";
     const pDate = document.getElementById('partner_birth_date').value; 
     const pTime = document.getElementById('partner_birth_time').value;
     
@@ -1764,24 +1762,80 @@ function calculateSynastry() {
         [h, min] = pTime.split(':');
     }
 
+    // คำนวณดวงชะตาคนรัก
     const solar = Solar.fromYmdHms(parseInt(y), parseInt(m), parseInt(d), parseInt(h), parseInt(min), 0);
     const bazi = solar.getLunar().getEightChar(); 
     
     partnerBaZiData = { 
-        name: document.getElementById('partner_name').value || "พาร์ทเนอร์", 
+        name: pName, 
         gender: document.getElementById('partner_gender').value, 
         year: { gan: bazi.getYearGan(), zhi: bazi.getYearZhi() }, 
         month: { gan: bazi.getMonthGan(), zhi: bazi.getMonthZhi() }, 
         day: { gan: bazi.getDayGan(), zhi: bazi.getDayZhi() }, 
         hour: pTime ? { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() } : { gan: '-', zhi: '-' } 
     };
+
+    // 1. ประมวลผล Local UI ทันทีใน Modal
+    const myGan = currentBaZiData.day.gan;
+    const myZhi = currentBaZiData.day.zhi;
+    const pGan = partnerBaZiData.day.gan;
+    const pZhi = partnerBaZiData.day.zhi;
+
+    let ganScore = 0; let zhiScore = 0;
+    let ganMessage = ""; let zhiMessage = "";
+
+    const ganCombos = ["甲己", "乙庚", "丙辛", "丁壬", "戊癸", "己甲", "庚乙", "辛丙", "壬丁", "癸戊"];
+    const ganClashes = ["甲庚", "乙辛", "丙壬", "丁癸", "庚甲", "辛乙", "壬丙", "癸丁"]; 
     
-    closeSynastryModal();
-    
+    if (ganCombos.includes(myGan + pGan)) { ganScore = 100; ganMessage = `✨ <b>ภาคีสวรรค์ (ฮะ)</b>: ดิถีทัศนคติสอดคล้องกัน ดึงดูดเข้าหากันราวกับแม่เหล็ก`; }
+    else if (ganClashes.includes(myGan + pGan)) { ganScore = 20; ganMessage = `⚔️ <b>ปะทะ (ชง)</b>: มุมมองชีวิตต่างกัน ต้องเปิดใจและปรับตัวเข้าหากันให้มาก`; }
+    else if (myGan === pGan) { ganScore = 60; ganMessage = `🤝 <b>ธาตุเดียวกัน</b>: คบกันเหมือนเพื่อนที่รู้ใจ แต่อาจขาดแรงดึงดูดแบบขั้วตรงข้าม`; }
+    else { ganScore = 70; ganMessage = `🍃 <b>เกื้อกูล</b>: มีความสัมพันธ์แบบเกื้อกูลหรือท้าทายกันในระดับปกติ คบหากันได้ดี`; }
+
+    const zhiCombos = ["子丑", "寅亥", "卯戌", "辰酉", "巳申", "午未", "丑子", "亥寅", "戌卯", "酉辰", "申巳", "未午"]; 
+    const zhiClashes = ["子午", "丑未", "寅申", "卯酉", "辰戌", "巳亥", "午子", "未丑", "申寅", "酉卯", "戌辰", "亥巳"]; 
+
+    if (zhiCombos.includes(myZhi + pZhi)) { zhiScore = 100; zhiMessage = `💖 <b>ภาคีปฐพี (ฮะ)</b>: วังคู่ครองเข้ากันได้ดีเยี่ยม ชีวิตคู่ราบรื่น ไลฟ์สไตล์ตรงกัน`; }
+    else if (zhiClashes.includes(myZhi + pZhi)) { zhiScore = 20; zhiMessage = `💥 <b>ปะทะ (ชง)</b>: วังคู่ครองชงกัน อาจมีความไม่เข้าใจกันเรื่องการใช้ชีวิตในบ้าน (แก้เคล็ดด้วยการแยกเตียง/เดินทางบ่อย)`; }
+    else { zhiScore = 70; zhiMessage = `🏡 <b>ปกติสุข</b>: วังคู่ครองไม่ชนไม่ฮะกัน สร้างครอบครัวร่วมกันได้อย่างสงบสุข`; }
+
+    const totalScore = Math.floor((ganScore + zhiScore) / 2);
+    let themeColor = totalScore >= 80 ? "#4caf50" : (totalScore >= 50 ? "#ffb300" : "#f44336");
+
+    let resultDiv = document.getElementById('synastry-result');
+    if (resultDiv) {
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `
+            <div style="padding: 15px; background: #fff; border: 2px solid ${themeColor}; border-radius: 8px;">
+                <h3 style="color: ${themeColor}; margin-top: 0; text-align: center;">ดัชนีความสมพงษ์: ${totalScore}%</h3>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 12px; color:#777;">คุณ</div>
+                        <div class="box" style="height: 60px; width: 50px; padding: 5px; margin:0 auto; font-size: 20px;">${myGan}</div>
+                        <div class="box" style="height: 60px; width: 50px; padding: 5px; margin:0 auto; font-size: 20px;">${myZhi}</div>
+                    </div>
+                    <div style="font-size: 24px;">❤️</div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 12px; color:#777;">${pName}</div>
+                        <div class="box" style="height: 60px; width: 50px; padding: 5px; margin:0 auto; border-color:#e91e63; font-size: 20px; color:#e91e63;">${pGan}</div>
+                        <div class="box" style="height: 60px; width: 50px; padding: 5px; margin:0 auto; border-color:#e91e63; font-size: 20px; color:#e91e63;">${pZhi}</div>
+                    </div>
+                </div>
+                <p style="font-size: 13.5px; line-height: 1.6; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-top:0;">${ganMessage}</p>
+                <p style="font-size: 13.5px; line-height: 1.6; margin-bottom: 0;">${zhiMessage}</p>
+                <div style="text-align:center; margin-top:15px;">
+                    <p style="font-size:12px; color:#9c27b0; margin-bottom:5px;">*ปิดหน้าต่างนี้เพื่ออ่านคำทำนายเชิงลึกจากซินแส (AI)</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. เรียกใช้งาน AI Backend ซินแส (ทำงานเบื้องหลัง)
     const btn = document.getElementById('ai-synastry-btn'); 
     document.getElementById('ai-result-box').style.display = "block";
-    document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังทาบดวงชะตาเพื่อหาจุดสมพงษ์... ⏳</div>`; 
+    document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังอัญเชิญซินแสมาวิเคราะห์ความสัมพันธ์เชิงลึก (ดวงสมพงษ์)... ⏳</div>`; 
     btn.disabled = true;
+    btn.innerText = "⏳ กำลังประมวลผล...";
     
     const payload = { 
         action: "synastry", 
@@ -1797,7 +1851,7 @@ function calculateSynastry() {
     .then(r => r.json())
     .then(data => {
         if (data.result === "success") {
-            document.getElementById('ai-content').innerHTML = data.analysis;
+            document.getElementById('ai-content').innerHTML = `<h3 style="color:#e91e63; border-bottom:2px solid #f48fb1; padding-bottom:10px; margin-top:0;">💞 วิเคราะห์ดวงสมพงษ์</h3>` + data.analysis;
         } else {
             document.getElementById('ai-content').innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${data.message}</p>`; 
         }
@@ -1805,7 +1859,7 @@ function calculateSynastry() {
         btn.innerText = "💞 เทียบดวงสมพงษ์";
     })
     .catch(e => {
-        document.getElementById('ai-content').innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อได้ในขณะนี้</p>`;
+        document.getElementById('ai-content').innerHTML = `<p style="color:red;">ไม่สามารถเชื่อมต่อ AI ซินแสได้ในขณะนี้ (วิเคราะห์ได้เฉพาะตัวเลข %)</p>`;
         btn.disabled = false;
         btn.innerText = "💞 เทียบดวงสมพงษ์";
     });

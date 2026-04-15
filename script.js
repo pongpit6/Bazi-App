@@ -12,7 +12,7 @@ let elementCounts = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
 
 let currentCalYear = new Date().getFullYear();
 let currentCalMonth = new Date().getMonth() + 1;
-let isTimeUnknown = false; // Flag เช็คว่ารู้เวลาเกิดหรือไม่
+let isTimeUnknown = false; 
 
 const elementMap = {
     '甲': { type: 'wood', icon: '🌳', thName: 'ไม้หยาง' }, '乙': { type: 'wood', icon: '🌿', thName: 'ไม้หยิน' },
@@ -160,7 +160,6 @@ const naYinDesc = {
 const iconMap = { 'wood': '🌳', 'fire': '🔥', 'earth': '⛰️', 'metal': '🪙', 'water': '💧' };
 const thTypeMap = {'wood': 'ไม้', 'fire': 'ไฟ', 'earth': 'ดิน', 'metal': 'ทอง', 'water': 'น้ำ'};
 
-// ✨ ฟังก์ชันสแกนหา "ภาคีซ่อน" (Hidden Combos)
 function getHiddenComboHtml(char, level, pillar, baziData) {
     let res = '';
     const pillars = ['year', 'month', 'day', 'hour'];
@@ -1030,7 +1029,6 @@ function showPopup(titleName, elementId, type) {
         htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะหรือส่งผลพิเศษกับเสานี้ครับ</p></div>`;
     }
 
-    // ✨ สแกนแอบฮะ (เฉพาะดวงกำเนิด)
     if (type === 'natal') {
         let hiddenHtml = getHiddenComboHtml(char, level, pillar, currentBaZiData);
         if (hiddenHtml !== '') {
@@ -1196,6 +1194,7 @@ function calculateBaZi() {
     document.getElementById('save-btn').style.display = "block";
 }
 
+// ✨ อัปเดต renderLuck ใหม่ ให้คลิกการ์ดได้
 function renderLuck(solar, genderNum, currentAge) {
     const bazi = solar.getLunar().getEightChar();
     const yun = bazi.getYun(genderNum);
@@ -1286,9 +1285,100 @@ function renderLuck(solar, genderNum, currentAge) {
     radarHtml += `</ul>`;
     document.getElementById('five-year-radar-box').innerHTML = radarHtml;
 }
-    
-    radarHtml += `</ul>`;
-    document.getElementById('five-year-radar-box').innerHTML = radarHtml;
+
+// ✨ ฟังก์ชันใหม่: แสดงรายละเอียดเจาะลึกเมื่อคลิกการ์ด วัยจร/ปีจร
+function showLuckDetails(gan, zhi, titleLabel, type) {
+    if (!currentBaZiData.day || currentBaZiData.day.gan === '-') return;
+
+    const dmGan = currentBaZiData.day.gan;
+    const dmType = elementMap[dmGan].type;
+    const ganType = elementMap[gan].type;
+    const zhiType = elementMap[zhi].type;
+
+    let html = `<h3 style="color:#1565c0; margin-top:0; border-bottom:1px solid #bbdefb; padding-bottom:10px;">🔍 วิเคราะห์พลังงาน: ${titleLabel}</h3>`;
+
+    // 1. สิบเทพและบทบาทที่เข้ามา
+    let tenGodGanCh = tenGodsMap[dmGan][gan];
+    let tenGodGanTh = shiShenMap[tenGodGanCh] || tenGodGanCh;
+    let descGan = shiShenDesc[tenGodGanTh] || '';
+
+    html += `<div style="background:#f1f8e9; padding:15px; border-radius:8px; border-left:4px solid #4caf50; margin-bottom:15px; display:flex; gap:15px; align-items:center;">
+                <div style="text-align:center;">
+                    <div class="box ${ganType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${gan}</div>
+                    <div class="box ${zhiType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${zhi}</div>
+                </div>
+                <div>
+                    <p style="margin:0 0 5px 0; font-size:14.5px;"><b>บทบาทที่เข้ามา (สิบเทพ):</b> <span style="color:#d32f2f; font-weight:bold;">${tenGodGanTh}</span></p>
+                    <p style="margin:0; font-size:13px; color:#555; line-height:1.5;">${descGan.replace(/\n/g, '<br>')}</p>
+                </div>
+             </div>`;
+
+    // 2. วิเคราะห์ธาตุให้คุณ/ให้โทษ
+    let isGanFav = dmStrengthData.favTypes.includes(ganType);
+    let isZhiFav = dmStrengthData.favTypes.includes(zhiType);
+
+    html += `<div style="margin-bottom:15px; font-size:13.5px; line-height:1.6;">`;
+    html += `<b>ราศีบน (${gan} - ธาตุ${thTypeMap[ganType]}):</b> ` + (isGanFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][ganType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][ganType].unfav})</span>`) + `<br>`;
+    html += `<b>ราศีล่าง (${zhi} - ธาตุ${thTypeMap[zhiType]}):</b> ` + (isZhiFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][zhiType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][zhiType].unfav})</span>`);
+    html += `</div>`;
+
+    // 3. ปฏิกิริยากับพื้นดวง (ชง ฮะ เฮ้ง เปิดคลัง)
+    let interactHtml = '';
+    const pillars = ['year', 'month', 'day', 'hour'];
+
+    pillars.forEach(p => {
+         let nGan = currentBaZiData[p].gan;
+         if (nGan !== '-' && interactions.heavenlyCombos[gan] === nGan) interactHtml += `<div class="advice-box advice-good">✨ <b>ฟ้าฮะ:</b> ผูกพันกับเสา${pillarNamesTh[p]} กำเนิด (สอดคล้องกัน ราบรื่น)</div>`;
+         if (nGan !== '-' && interactions.heavenlyClashes[gan] === nGan) interactHtml += `<div class="advice-box advice-bad">💥 <b>ฟ้าชง:</b> ขัดแย้งกับเสา${pillarNamesTh[p]} กำเนิด (มีความคิดเห็นไม่ตรงกัน เปลี่ยนแปลงภายนอก)</div>`;
+    });
+
+    pillars.forEach(p => {
+         let nZhi = currentBaZiData[p].zhi;
+         if (nZhi !== '-' && interactions.earthlyCombos[zhi] === nZhi) interactHtml += `<div class="advice-box advice-good">🤝 <b>ลักฮะ:</b> วิ่งมาฮะกับเสา${pillarNamesTh[p]} -> ${comboMetaphors[p]}</div>`;
+         if (nZhi !== '-' && interactions.earthlyClashes[zhi] === nZhi) interactHtml += `<div class="advice-box advice-bad">🚨 <b>ลักชง:</b> วิ่งมาชงกับเสา${pillarNamesTh[p]} -> ${clashMetaphors[p]}</div>`;
+         if (nZhi !== '-' && interactions.earthlyPunishments[zhi] && interactions.earthlyPunishments[zhi].includes(nZhi)) interactHtml += `<div class="advice-box advice-bad">⚠️ <b>เฮ้ง:</b> เบียดเบียนเสา${pillarNamesTh[p]} (ระวังความวุ่นวาย อึดอัดใจ)</div>`;
+    });
+
+    if (zhi === currentVaults.wealthVault) interactHtml += `<div class="advice-box advice-good" style="background:#fff8e1; border-color:#ffb300; color:#f57f17;">💰 <b>เปิดคลังสมบัติ!</b> มีเกณฑ์รับทรัพย์ก้อนใหญ่ หรือจังหวะการลงทุนที่สำคัญเปิดออก</div>`;
+    if (zhi === currentVaults.powerVault) interactHtml += `<div class="advice-box advice-good" style="background:#f3e5f5; border-color:#ab47bc; color:#6a1b9a;">🏛️ <b>เปิดคลังอำนาจ!</b> มีเกณฑ์ได้เลื่อนขั้น รับตำแหน่ง หรือมีอำนาจบารมีมากขึ้นชัดเจน</div>`;
+
+    // 4. เช็คว่าปีนี้เข้ามาเติมเต็ม "จิ๊กซอว์" ไตรภาคี (San He) ให้ดวงหรือไม่
+    const zhis = pillars.map(p => currentBaZiData[p]?.zhi).filter(z => z && z !== '-');
+    const uniqueZhis = [...new Set(zhis)];
+    const sanHe = [
+        { name: 'ไตรภาคีน้ำ 💧', req: ['申', '子', '辰'], trigger: 'ไหวพริบ, การพลิกแพลง, ได้เดินทางหรือเชื่อมต่อผู้คนจำนวนมาก' },
+        { name: 'ไตรภาคีไม้ 🌳', req: ['亥', '卯', '未'], trigger: 'การเติบโตก้าวกระโดด, ได้คอนเนคชั่นใหม่, ความคิดสร้างสรรค์สำเร็จ' },
+        { name: 'ไตรภาคีไฟ 🔥', req: ['寅', '午', '戌'], trigger: 'ชื่อเสียงโด่งดัง, เป็นที่จับตามอง, ความปรารถนาแรงกล้าสำเร็จ' },
+        { name: 'ไตรภาคีทอง 🪙', req: ['巳', '酉', '丑'], trigger: 'ความเด็ดขาด, อำนาจการตัดสินใจ, ความสำเร็จทางการเงินเป็นรูปธรรม' }
+    ];
+
+    sanHe.forEach(group => {
+        if (group.req.includes(zhi)) {
+            let matchCount = 0;
+            group.req.forEach(z => { if (uniqueZhis.includes(z)) matchCount++; });
+            // ถ้าดวงกำเนิดมี 2 ตัว แล้วปี/วัยจรเอาตัวที่ 3 เข้ามาเติมเต็ม
+            if (matchCount === 2 && !uniqueZhis.includes(zhi)) {
+                interactHtml += `<div class="advice-box advice-good" style="background:#e3f2fd; border-color:#2196f3; color:#0d47a1;">🧩 <b>จิ๊กซอว์สมบูรณ์!:</b> พลังงานนี้เข้ามาเติมเต็มดวงคุณให้เกิด <b>${group.name}</b> ส่งผลให้: ${group.trigger}</div>`;
+            }
+        }
+    });
+
+    if (interactHtml === '') interactHtml = '<p style="font-size:13.5px; color:#777;">ไม่เกิดการชงหรือฮะที่รุนแรงกับพื้นดวง เป็นช่วงเวลาที่พลังงานค่อนข้างเสถียรและดำเนินไปตามปกติ</p>';
+
+    html += `<div style="background:#fcfcfc; padding:15px; border-radius:8px; border: 1px solid #eee;">
+                <h4 style="margin-top:0; color:#e65100;">🔮 ปฏิกิริยากับพื้นดวง (ชง/ฮะ/เปิดคลัง)</h4>
+                ${interactHtml}
+             </div>`;
+
+    // 5. เช็คตำแหน่งสูญสิ้น (คงบ้วง)
+    if (currentKongWang.includes(zhi)) {
+        html += `<div class="advice-box advice-bad" style="margin-top:15px; background:#fff; border-color:#9e9e9e; color:#616161;">🕳️ <b>ตกตำแหน่งคงบ้วง (สูญสิ้น):</b> พลังงานในช่วงนี้อาจว่างเปล่า หรือสำเร็จได้ยากกว่าปกติ ต้องออกแรงเป็น 2 เท่าถึงจะเห็นผล</div>`;
+    }
+
+    // แปะลงใน Popup Modal ตัวเดิมที่ใช้งานอยู่
+    document.getElementById('popup-title').innerText = "คำทำนายพลังงานจร";
+    document.getElementById('popup-detail').innerHTML = html;
+    document.getElementById('popup-modal').style.display = "flex";
 }
 
 function openTutorial() {
@@ -1754,7 +1844,6 @@ function closeSynastryModal() {
     document.getElementById('synastry-modal').style.display = "none"; 
 }
 
-// ✨ อัปเดตลอจิกสมพงษ์ (รวมการโชว์ % Local ทันที + เรียก AI วิเคราะห์)
 function calculateSynastry() {
     const pName = document.getElementById('partner_name').value || "คนรักของคุณ";
     const pDate = document.getElementById('partner_birth_date').value; 
@@ -1770,7 +1859,6 @@ function calculateSynastry() {
         [h, min] = pTime.split(':');
     }
 
-    // คำนวณดวงชะตาคนรัก
     const solar = Solar.fromYmdHms(parseInt(y), parseInt(m), parseInt(d), parseInt(h), parseInt(min), 0);
     const bazi = solar.getLunar().getEightChar(); 
     
@@ -1783,7 +1871,6 @@ function calculateSynastry() {
         hour: pTime ? { gan: bazi.getTimeGan(), zhi: bazi.getTimeZhi() } : { gan: '-', zhi: '-' } 
     };
 
-    // 1. ประมวลผล Local UI ทันทีใน Modal
     const myGan = currentBaZiData.day.gan;
     const myZhi = currentBaZiData.day.zhi;
     const pGan = partnerBaZiData.day.gan;
@@ -1838,7 +1925,6 @@ function calculateSynastry() {
         `;
     }
 
-    // 2. เรียกใช้งาน AI Backend ซินแส (ทำงานเบื้องหลัง)
     const btn = document.getElementById('ai-synastry-btn'); 
     document.getElementById('ai-result-box').style.display = "block";
     document.getElementById('ai-content').innerHTML = `<div style="text-align:center;">กำลังอัญเชิญซินแสมาวิเคราะห์ความสัมพันธ์เชิงลึก (ดวงสมพงษ์)... ⏳</div>`; 
@@ -2024,97 +2110,3 @@ window.onload = function() {
     fetchSavedData(); 
     renderCurrentTimeBaZi(); 
 };
-// ✨ ฟังก์ชันใหม่: แสดงรายละเอียดเจาะลึกเมื่อคลิกการ์ด วัยจร/ปีจร
-function showLuckDetails(gan, zhi, titleLabel, type) {
-    if (!currentBaZiData.day || currentBaZiData.day.gan === '-') return;
-
-    const dmGan = currentBaZiData.day.gan;
-    const dmType = elementMap[dmGan].type;
-    const ganType = elementMap[gan].type;
-    const zhiType = elementMap[zhi].type;
-
-    let html = `<h3 style="color:#1565c0; margin-top:0; border-bottom:1px solid #bbdefb; padding-bottom:10px;">🔍 วิเคราะห์พลังงาน: ${titleLabel}</h3>`;
-
-    // 1. สิบเทพและบทบาทที่เข้ามา
-    let tenGodGanCh = tenGodsMap[dmGan][gan];
-    let tenGodGanTh = shiShenMap[tenGodGanCh] || tenGodGanCh;
-    let descGan = shiShenDesc[tenGodGanTh] || '';
-
-    html += `<div style="background:#f1f8e9; padding:15px; border-radius:8px; border-left:4px solid #4caf50; margin-bottom:15px; display:flex; gap:15px; align-items:center;">
-                <div style="text-align:center;">
-                    <div class="box ${ganType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${gan}</div>
-                    <div class="box ${zhiType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${zhi}</div>
-                </div>
-                <div>
-                    <p style="margin:0 0 5px 0; font-size:14.5px;"><b>บทบาทที่เข้ามา (สิบเทพ):</b> <span style="color:#d32f2f; font-weight:bold;">${tenGodGanTh}</span></p>
-                    <p style="margin:0; font-size:13px; color:#555; line-height:1.5;">${descGan.replace(/\n/g, '<br>')}</p>
-                </div>
-             </div>`;
-
-    // 2. วิเคราะห์ธาตุให้คุณ/ให้โทษ
-    let isGanFav = dmStrengthData.favTypes.includes(ganType);
-    let isZhiFav = dmStrengthData.favTypes.includes(zhiType);
-
-    html += `<div style="margin-bottom:15px; font-size:13.5px; line-height:1.6;">`;
-    html += `<b>ราศีบน (${gan} - ธาตุ${thTypeMap[ganType]}):</b> ` + (isGanFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][ganType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][ganType].unfav})</span>`) + `<br>`;
-    html += `<b>ราศีล่าง (${zhi} - ธาตุ${thTypeMap[zhiType]}):</b> ` + (isZhiFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][zhiType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][zhiType].unfav})</span>`);
-    html += `</div>`;
-
-    // 3. ปฏิกิริยากับพื้นดวง (ชง ฮะ เฮ้ง เปิดคลัง)
-    let interactHtml = '';
-    const pillars = ['year', 'month', 'day', 'hour'];
-
-    pillars.forEach(p => {
-         let nGan = currentBaZiData[p].gan;
-         if (nGan !== '-' && interactions.heavenlyCombos[gan] === nGan) interactHtml += `<div class="advice-box advice-good">✨ <b>ฟ้าฮะ:</b> ผูกพันกับเสา${pillarNamesTh[p]} กำเนิด (สอดคล้องกัน ราบรื่น)</div>`;
-         if (nGan !== '-' && interactions.heavenlyClashes[gan] === nGan) interactHtml += `<div class="advice-box advice-bad">💥 <b>ฟ้าชง:</b> ขัดแย้งกับเสา${pillarNamesTh[p]} กำเนิด (มีความคิดเห็นไม่ตรงกัน เปลี่ยนแปลงภายนอก)</div>`;
-    });
-
-    pillars.forEach(p => {
-         let nZhi = currentBaZiData[p].zhi;
-         if (nZhi !== '-' && interactions.earthlyCombos[zhi] === nZhi) interactHtml += `<div class="advice-box advice-good">🤝 <b>ลักฮะ:</b> วิ่งมาฮะกับเสา${pillarNamesTh[p]} -> ${comboMetaphors[p]}</div>`;
-         if (nZhi !== '-' && interactions.earthlyClashes[zhi] === nZhi) interactHtml += `<div class="advice-box advice-bad">🚨 <b>ลักชง:</b> วิ่งมาชงกับเสา${pillarNamesTh[p]} -> ${clashMetaphors[p]}</div>`;
-         if (nZhi !== '-' && interactions.earthlyPunishments[zhi] && interactions.earthlyPunishments[zhi].includes(nZhi)) interactHtml += `<div class="advice-box advice-bad">⚠️ <b>เฮ้ง:</b> เบียดเบียนเสา${pillarNamesTh[p]} (ระวังความวุ่นวาย อึดอัดใจ)</div>`;
-    });
-
-    if (zhi === currentVaults.wealthVault) interactHtml += `<div class="advice-box advice-good" style="background:#fff8e1; border-color:#ffb300; color:#f57f17;">💰 <b>เปิดคลังสมบัติ!</b> มีเกณฑ์รับทรัพย์ก้อนใหญ่ หรือจังหวะการลงทุนที่สำคัญเปิดออก</div>`;
-    if (zhi === currentVaults.powerVault) interactHtml += `<div class="advice-box advice-good" style="background:#f3e5f5; border-color:#ab47bc; color:#6a1b9a;">🏛️ <b>เปิดคลังอำนาจ!</b> มีเกณฑ์ได้เลื่อนขั้น รับตำแหน่ง หรือมีอำนาจบารมีมากขึ้นชัดเจน</div>`;
-
-    // 4. เช็คว่าปีนี้เข้ามาเติมเต็ม "จิ๊กซอว์" ไตรภาคี (San He) ให้ดวงหรือไม่
-    const zhis = pillars.map(p => currentBaZiData[p]?.zhi).filter(z => z && z !== '-');
-    const uniqueZhis = [...new Set(zhis)];
-    const sanHe = [
-        { name: 'ไตรภาคีน้ำ 💧', req: ['申', '子', '辰'], trigger: 'ไหวพริบ, การพลิกแพลง, ได้เดินทางหรือเชื่อมต่อผู้คนจำนวนมาก' },
-        { name: 'ไตรภาคีไม้ 🌳', req: ['亥', '卯', '未'], trigger: 'การเติบโตก้าวกระโดด, ได้คอนเนคชั่นใหม่, ความคิดสร้างสรรค์สำเร็จ' },
-        { name: 'ไตรภาคีไฟ 🔥', req: ['寅', '午', '戌'], trigger: 'ชื่อเสียงโด่งดัง, เป็นที่จับตามอง, ความปรารถนาแรงกล้าสำเร็จ' },
-        { name: 'ไตรภาคีทอง 🪙', req: ['巳', '酉', '丑'], trigger: 'ความเด็ดขาด, อำนาจการตัดสินใจ, ความสำเร็จทางการเงินเป็นรูปธรรม' }
-    ];
-
-    sanHe.forEach(group => {
-        if (group.req.includes(zhi)) {
-            let matchCount = 0;
-            group.req.forEach(z => { if (uniqueZhis.includes(z)) matchCount++; });
-            // ถ้าดวงกำเนิดมี 2 ตัว แล้วปี/วัยจรเอาตัวที่ 3 เข้ามาเติมเต็ม
-            if (matchCount === 2 && !uniqueZhis.includes(zhi)) {
-                interactHtml += `<div class="advice-box advice-good" style="background:#e3f2fd; border-color:#2196f3; color:#0d47a1;">🧩 <b>จิ๊กซอว์สมบูรณ์!:</b> พลังงานนี้เข้ามาเติมเต็มดวงคุณให้เกิด <b>${group.name}</b> ส่งผลให้: ${group.trigger}</div>`;
-            }
-        }
-    });
-
-    if (interactHtml === '') interactHtml = '<p style="font-size:13.5px; color:#777;">ไม่เกิดการชงหรือฮะที่รุนแรงกับพื้นดวง เป็นช่วงเวลาที่พลังงานค่อนข้างเสถียรและดำเนินไปตามปกติ</p>';
-
-    html += `<div style="background:#fcfcfc; padding:15px; border-radius:8px; border: 1px solid #eee;">
-                <h4 style="margin-top:0; color:#e65100;">🔮 ปฏิกิริยากับพื้นดวง (ชง/ฮะ/เปิดคลัง)</h4>
-                ${interactHtml}
-             </div>`;
-
-    // 5. เช็คตำแหน่งสูญสิ้น (คงบ้วง)
-    if (currentKongWang.includes(zhi)) {
-        html += `<div class="advice-box advice-bad" style="margin-top:15px; background:#fff; border-color:#9e9e9e; color:#616161;">🕳️ <b>ตกตำแหน่งคงบ้วง (สูญสิ้น):</b> พลังงานในช่วงนี้อาจว่างเปล่า หรือสำเร็จได้ยากกว่าปกติ ต้องออกแรงเป็น 2 เท่าถึงจะเห็นผล</div>`;
-    }
-
-    // แปะลงใน Popup Modal ตัวเดิมที่ใช้งานอยู่
-    document.getElementById('popup-title').innerText = "คำทำนายพลังงานจร";
-    document.getElementById('popup-detail').innerHTML = html;
-    document.getElementById('popup-modal').style.display = "flex";
-}

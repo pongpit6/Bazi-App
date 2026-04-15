@@ -1219,8 +1219,10 @@ function renderLuck(solar, genderNum, currentAge) {
         let extraStyle = isCurrentDaYun ? 'box-shadow: 0 0 10px #4caf50; border: 2px solid #4caf50;' : '';
         let currentLabel = isCurrentDaYun ? `<div style="background:#4caf50; color:white; font-size:10px; padding:2px 5px; border-radius:10px; margin-bottom:5px; animation: pulse 2s infinite;">📍 วัยจรปัจจุบัน</div>` : '';
 
+        // ✨ อัปเดต: เพิ่ม cursor:pointer และ onclick สำหรับเปิดอ่านรายละเอียดวัยจร
         daYunContainer.innerHTML += `
-            <div class="luck-pillar" style="${extraStyle}">
+            <div class="luck-pillar" style="${extraStyle} cursor:pointer;" onclick="showLuckDetails('${gan}', '${zhi}', 'วัยจรช่วงอายุ ${dy.getStartAge()} - ${dy.getStartAge()+9}', 'dayun')">
+                <div style="position:absolute; top:8px; right:8px; font-size:14px; opacity:0.4;">🔍</div>
                 ${currentLabel}
                 <div class="age-label">อายุ ${dy.getStartAge()}</div>
                 <div class="luck-shishen tooltip-container">${tenGodTh}<span class="tooltip-text">${desc}</span></div>
@@ -1252,8 +1254,10 @@ function renderLuck(solar, genderNum, currentAge) {
         let extraStyle = (i === 0) ? 'box-shadow: 0 0 10px #2196f3; border: 2px solid #2196f3;' : '';
         let currentLabel = (i === 0) ? `<div style="background:#2196f3; color:white; font-size:10px; padding:2px 5px; border-radius:10px; margin-bottom:5px; animation: pulse 2s infinite;">📍 ปีปัจจุบัน</div>` : '';
 
+        // ✨ อัปเดต: เพิ่ม onclick อ่านรายละเอียด และป้องกัน Event Bubble ที่ปุ่มวาร์ป
         liuNianContainer.innerHTML += `
-            <div class="luck-pillar" style="${extraStyle}">
+            <div class="luck-pillar" style="${extraStyle} cursor:pointer;" onclick="showLuckDetails('${yGan}', '${yZhi}', 'ปีจร ค.ศ. ${tYear} (ปี${lYear.getYearShengXiao()})', 'liunian')">
+                <div style="position:absolute; top:8px; right:8px; font-size:14px; opacity:0.4;">🔍</div>
                 ${currentLabel}
                 <div class="age-label">${tYear}</div>
                 <div class="luck-shishen tooltip-container">${tenGodTh}<span class="tooltip-text">${desc}</span></div>
@@ -1261,7 +1265,7 @@ function renderLuck(solar, genderNum, currentAge) {
                 <div class="box ${elementMap[yZhi]?.type}" style="opacity: ${isKw ? '0.6' : '1'}">${getBoxInnerHtml(yZhi, [], isKw)}</div>
                 <div class="year-label">ปี${lYear.getYearShengXiao()}</div>
                 ${interactionHtml}
-                <button class="time-warp-btn" onclick="travelToYear(${tYear})">⏳ วาร์ป</button>
+                <button class="time-warp-btn" onclick="event.stopPropagation(); travelToYear(${tYear})">⏳ วาร์ป</button>
             </div>`;
 
         if (i < 5) {
@@ -1278,6 +1282,10 @@ function renderLuck(solar, genderNum, currentAge) {
             radarHtml += `<li style="margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;"><b>ปี ${tYear} (ปี${elementMap[yZhi].thName.split(' ')[0]}):</b> ${eventStr}</li>`;
         }
     }
+    
+    radarHtml += `</ul>`;
+    document.getElementById('five-year-radar-box').innerHTML = radarHtml;
+}
     
     radarHtml += `</ul>`;
     document.getElementById('five-year-radar-box').innerHTML = radarHtml;
@@ -2016,3 +2024,97 @@ window.onload = function() {
     fetchSavedData(); 
     renderCurrentTimeBaZi(); 
 };
+// ✨ ฟังก์ชันใหม่: แสดงรายละเอียดเจาะลึกเมื่อคลิกการ์ด วัยจร/ปีจร
+function showLuckDetails(gan, zhi, titleLabel, type) {
+    if (!currentBaZiData.day || currentBaZiData.day.gan === '-') return;
+
+    const dmGan = currentBaZiData.day.gan;
+    const dmType = elementMap[dmGan].type;
+    const ganType = elementMap[gan].type;
+    const zhiType = elementMap[zhi].type;
+
+    let html = `<h3 style="color:#1565c0; margin-top:0; border-bottom:1px solid #bbdefb; padding-bottom:10px;">🔍 วิเคราะห์พลังงาน: ${titleLabel}</h3>`;
+
+    // 1. สิบเทพและบทบาทที่เข้ามา
+    let tenGodGanCh = tenGodsMap[dmGan][gan];
+    let tenGodGanTh = shiShenMap[tenGodGanCh] || tenGodGanCh;
+    let descGan = shiShenDesc[tenGodGanTh] || '';
+
+    html += `<div style="background:#f1f8e9; padding:15px; border-radius:8px; border-left:4px solid #4caf50; margin-bottom:15px; display:flex; gap:15px; align-items:center;">
+                <div style="text-align:center;">
+                    <div class="box ${ganType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${gan}</div>
+                    <div class="box ${zhiType}" style="height:60px; width:50px; padding:5px; font-size:20px; cursor:default; margin-bottom:0;">${zhi}</div>
+                </div>
+                <div>
+                    <p style="margin:0 0 5px 0; font-size:14.5px;"><b>บทบาทที่เข้ามา (สิบเทพ):</b> <span style="color:#d32f2f; font-weight:bold;">${tenGodGanTh}</span></p>
+                    <p style="margin:0; font-size:13px; color:#555; line-height:1.5;">${descGan.replace(/\n/g, '<br>')}</p>
+                </div>
+             </div>`;
+
+    // 2. วิเคราะห์ธาตุให้คุณ/ให้โทษ
+    let isGanFav = dmStrengthData.favTypes.includes(ganType);
+    let isZhiFav = dmStrengthData.favTypes.includes(zhiType);
+
+    html += `<div style="margin-bottom:15px; font-size:13.5px; line-height:1.6;">`;
+    html += `<b>ราศีบน (${gan} - ธาตุ${thTypeMap[ganType]}):</b> ` + (isGanFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][ganType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][ganType].unfav})</span>`) + `<br>`;
+    html += `<b>ราศีล่าง (${zhi} - ธาตุ${thTypeMap[zhiType]}):</b> ` + (isZhiFav ? `<span style="color:#2e7d32;">✅ เป็นธาตุให้คุณ (${elementMetaphors[dmType][zhiType].fav})</span>` : `<span style="color:#d32f2f;">❌ เป็นธาตุให้โทษ (${elementMetaphors[dmType][zhiType].unfav})</span>`);
+    html += `</div>`;
+
+    // 3. ปฏิกิริยากับพื้นดวง (ชง ฮะ เฮ้ง เปิดคลัง)
+    let interactHtml = '';
+    const pillars = ['year', 'month', 'day', 'hour'];
+
+    pillars.forEach(p => {
+         let nGan = currentBaZiData[p].gan;
+         if (nGan !== '-' && interactions.heavenlyCombos[gan] === nGan) interactHtml += `<div class="advice-box advice-good">✨ <b>ฟ้าฮะ:</b> ผูกพันกับเสา${pillarNamesTh[p]} กำเนิด (สอดคล้องกัน ราบรื่น)</div>`;
+         if (nGan !== '-' && interactions.heavenlyClashes[gan] === nGan) interactHtml += `<div class="advice-box advice-bad">💥 <b>ฟ้าชง:</b> ขัดแย้งกับเสา${pillarNamesTh[p]} กำเนิด (มีความคิดเห็นไม่ตรงกัน เปลี่ยนแปลงภายนอก)</div>`;
+    });
+
+    pillars.forEach(p => {
+         let nZhi = currentBaZiData[p].zhi;
+         if (nZhi !== '-' && interactions.earthlyCombos[zhi] === nZhi) interactHtml += `<div class="advice-box advice-good">🤝 <b>ลักฮะ:</b> วิ่งมาฮะกับเสา${pillarNamesTh[p]} -> ${comboMetaphors[p]}</div>`;
+         if (nZhi !== '-' && interactions.earthlyClashes[zhi] === nZhi) interactHtml += `<div class="advice-box advice-bad">🚨 <b>ลักชง:</b> วิ่งมาชงกับเสา${pillarNamesTh[p]} -> ${clashMetaphors[p]}</div>`;
+         if (nZhi !== '-' && interactions.earthlyPunishments[zhi] && interactions.earthlyPunishments[zhi].includes(nZhi)) interactHtml += `<div class="advice-box advice-bad">⚠️ <b>เฮ้ง:</b> เบียดเบียนเสา${pillarNamesTh[p]} (ระวังความวุ่นวาย อึดอัดใจ)</div>`;
+    });
+
+    if (zhi === currentVaults.wealthVault) interactHtml += `<div class="advice-box advice-good" style="background:#fff8e1; border-color:#ffb300; color:#f57f17;">💰 <b>เปิดคลังสมบัติ!</b> มีเกณฑ์รับทรัพย์ก้อนใหญ่ หรือจังหวะการลงทุนที่สำคัญเปิดออก</div>`;
+    if (zhi === currentVaults.powerVault) interactHtml += `<div class="advice-box advice-good" style="background:#f3e5f5; border-color:#ab47bc; color:#6a1b9a;">🏛️ <b>เปิดคลังอำนาจ!</b> มีเกณฑ์ได้เลื่อนขั้น รับตำแหน่ง หรือมีอำนาจบารมีมากขึ้นชัดเจน</div>`;
+
+    // 4. เช็คว่าปีนี้เข้ามาเติมเต็ม "จิ๊กซอว์" ไตรภาคี (San He) ให้ดวงหรือไม่
+    const zhis = pillars.map(p => currentBaZiData[p]?.zhi).filter(z => z && z !== '-');
+    const uniqueZhis = [...new Set(zhis)];
+    const sanHe = [
+        { name: 'ไตรภาคีน้ำ 💧', req: ['申', '子', '辰'], trigger: 'ไหวพริบ, การพลิกแพลง, ได้เดินทางหรือเชื่อมต่อผู้คนจำนวนมาก' },
+        { name: 'ไตรภาคีไม้ 🌳', req: ['亥', '卯', '未'], trigger: 'การเติบโตก้าวกระโดด, ได้คอนเนคชั่นใหม่, ความคิดสร้างสรรค์สำเร็จ' },
+        { name: 'ไตรภาคีไฟ 🔥', req: ['寅', '午', '戌'], trigger: 'ชื่อเสียงโด่งดัง, เป็นที่จับตามอง, ความปรารถนาแรงกล้าสำเร็จ' },
+        { name: 'ไตรภาคีทอง 🪙', req: ['巳', '酉', '丑'], trigger: 'ความเด็ดขาด, อำนาจการตัดสินใจ, ความสำเร็จทางการเงินเป็นรูปธรรม' }
+    ];
+
+    sanHe.forEach(group => {
+        if (group.req.includes(zhi)) {
+            let matchCount = 0;
+            group.req.forEach(z => { if (uniqueZhis.includes(z)) matchCount++; });
+            // ถ้าดวงกำเนิดมี 2 ตัว แล้วปี/วัยจรเอาตัวที่ 3 เข้ามาเติมเต็ม
+            if (matchCount === 2 && !uniqueZhis.includes(zhi)) {
+                interactHtml += `<div class="advice-box advice-good" style="background:#e3f2fd; border-color:#2196f3; color:#0d47a1;">🧩 <b>จิ๊กซอว์สมบูรณ์!:</b> พลังงานนี้เข้ามาเติมเต็มดวงคุณให้เกิด <b>${group.name}</b> ส่งผลให้: ${group.trigger}</div>`;
+            }
+        }
+    });
+
+    if (interactHtml === '') interactHtml = '<p style="font-size:13.5px; color:#777;">ไม่เกิดการชงหรือฮะที่รุนแรงกับพื้นดวง เป็นช่วงเวลาที่พลังงานค่อนข้างเสถียรและดำเนินไปตามปกติ</p>';
+
+    html += `<div style="background:#fcfcfc; padding:15px; border-radius:8px; border: 1px solid #eee;">
+                <h4 style="margin-top:0; color:#e65100;">🔮 ปฏิกิริยากับพื้นดวง (ชง/ฮะ/เปิดคลัง)</h4>
+                ${interactHtml}
+             </div>`;
+
+    // 5. เช็คตำแหน่งสูญสิ้น (คงบ้วง)
+    if (currentKongWang.includes(zhi)) {
+        html += `<div class="advice-box advice-bad" style="margin-top:15px; background:#fff; border-color:#9e9e9e; color:#616161;">🕳️ <b>ตกตำแหน่งคงบ้วง (สูญสิ้น):</b> พลังงานในช่วงนี้อาจว่างเปล่า หรือสำเร็จได้ยากกว่าปกติ ต้องออกแรงเป็น 2 เท่าถึงจะเห็นผล</div>`;
+    }
+
+    // แปะลงใน Popup Modal ตัวเดิมที่ใช้งานอยู่
+    document.getElementById('popup-title').innerText = "คำทำนายพลังงานจร";
+    document.getElementById('popup-detail').innerHTML = html;
+    document.getElementById('popup-modal').style.display = "flex";
+}

@@ -26,6 +26,12 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .btn-pink { background-color: #e91e63; }
 .btn-grey { background-color: #607d8b; }
 .btn-yellow { background-color: #fbc02d; color: #333; }
+.btn-outline-purple { border: 1px solid #673ab7; color: #673ab7; background: transparent; }
+.btn-outline-purple:hover { background: #673ab7; color: white; }
+.btn-outline-pink { border: 1px solid #e91e63; color: #e91e63; background: transparent; }
+.btn-outline-pink:hover { background: #e91e63; color: white; }
+.btn-outline-yellow { border: 1px solid #fbc02d; color: #f57f17; background: transparent; }
+.btn-outline-yellow:hover { background: #fbc02d; color: white; }
 .save-btn { background-color: #2e7d32; width: 100%; }
 
 /* 🌟 Grid Buttons (สำหรับมือถือ) 🌟 */

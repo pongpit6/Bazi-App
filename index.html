@@ -29,8 +29,11 @@
                 <option value="หญิง">หญิง (坤)</option>
             </select>
             <input type="date" id="birth_date">
-            <input type="time" id="birth_time">
-            <button onclick="calculateBaZi()" class="btn-danger">คำนวณผูกดวง</button>
+            <div style="display: flex; flex-direction: column; flex: 1;">
+                <input type="time" id="birth_time" title="เวลาเกิด (เว้นว่างได้)">
+                <span style="font-size: 11px; color: #777; text-align: center; margin-top: 4px;">(ไม่ระบุเวลาเกิดได้)</span>
+            </div>
+            <button onclick="calculateBaZi()" class="btn-danger" style="height: 44px;">คำนวณผูกดวง</button>
         </div>
 
         <div style="text-align: center; margin-bottom: 20px;">
@@ -42,8 +45,9 @@
             <div id="element-chart" class="element-chart-container" style="display:none;"></div>
             <div id="dm-strength-box" class="dm-strength-container" style="display:none;"></div>
 
-            <div id="daily-briefing-box" class="briefing-container" style="display: none;">
-                </div>
+            <div id="actionable-advice-box" style="display:none; margin-bottom: 15px; padding: 15px; background: #e8f5e9; border-left: 5px solid #4caf50; border-radius: 8px; font-size: 14px; line-height: 1.6;"></div>
+
+            <div id="daily-briefing-box" class="briefing-container" style="display: none;"></div>
 
             <div id="current-bazi-section" style="display: block; position: relative;">
                 <h2 id="current-time-title" class="section-title">⏳ พลังงานกาลเวลาปัจจุบัน</h2>
@@ -129,6 +133,13 @@
                         <div id="year-nayin" class="nayin-text tooltip-container"></div>
                     </div>
                 </div>
+
+                <div id="missing-puzzle-box" style="display:none; margin-top: 20px; padding: 15px; background: #fff3e0; border-left: 5px solid #ff9800; border-radius: 8px; font-size: 14px; line-height: 1.6;"></div>
+
+            </div>
+            
+            <div id="card-branding" style="display: none; text-align: center; margin-top: 20px; font-weight: bold; color: #1565c0; font-size: 18px;">
+                🔮 BaZi Personal Strategist
             </div>
         </div> 
 
@@ -140,6 +151,10 @@
         <button id="download-btn" class="save-btn" style="display: none; background-color: #1976d2; margin-top: -10px; margin-bottom: 20px;" onclick="downloadBaziImage()">📸 บันทึกรูปดวงชะตา</button>
 
         <div id="luck-sections" style="display: none;">
+            
+            <h2 class="section-title">🔮 เรดาร์พยากรณ์ 5 ปีล่วงหน้า</h2>
+            <div id="five-year-radar-box" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;"></div>
+
             <h2 class="section-title">วัยจร 10 ปี (Da Yun)</h2>
             <div id="da-yun-list" class="luck-grid"></div>
 
@@ -150,6 +165,12 @@
         <div class="ai-section" style="margin-top: 30px; text-align: center;">
             <div id="custom-question-box" style="display: none; margin-bottom: 15px;">
                 <input type="text" id="ai-custom-question" placeholder="❓ มีคำถามให้ซินแสไหมครับ? (เช่น ปีนี้ควรเปลี่ยนงานไหม?)" style="width: 100%; box-sizing: border-box; border: 2px solid #9c27b0; padding: 12px; font-size: 16px; border-radius: 8px;">
+                
+                <div id="quick-prompts" style="display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
+                    <button class="btn-outline-purple" style="background: transparent; color: #673ab7; border: 1px solid #673ab7; font-size: 13px; padding: 6px 12px; border-radius: 20px;" onclick="document.getElementById('ai-custom-question').value='💼 ปีนี้ควรเปลี่ยนงานไหม?';">💼 งานใหม่?</button>
+                    <button class="btn-outline-pink" style="background: transparent; color: #e91e63; border: 1px solid #e91e63; font-size: 13px; padding: 6px 12px; border-radius: 20px;" onclick="document.getElementById('ai-custom-question').value='❤️ เกณฑ์ความรักช่วงนี้เป็นอย่างไร?';">❤️ ความรัก?</button>
+                    <button class="btn-outline-yellow" style="background: transparent; color: #f57f17; border: 1px solid #fbc02d; font-size: 13px; padding: 6px 12px; border-radius: 20px;" onclick="document.getElementById('ai-custom-question').value='💰 ปีนี้เหมาะจะลงทุนทำธุรกิจส่วนตัวไหม?';">💰 ลงทุน?</button>
+                </div>
             </div>
 
             <div id="ai-buttons-group" class="grid-buttons" style="display: none;">

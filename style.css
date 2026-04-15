@@ -122,6 +122,15 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
 .star-badge { font-size: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); border-radius: 50%; width: 20px; height: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 1px solid #eee; }
 .vault-badge { background: #fff8e1; border: 1px solid #ffb300; } 
 
+/* 🌟 ป้ายราก (Rooting Badges) 🌟 */
+.root-badge-container {
+    animation: fadeInRoot 0.5s ease-out;
+}
+@keyframes fadeInRoot {
+    0% { transform: translateY(5px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 /* 🌟 Tooltips 🌟 */
 .tooltip-container { position: relative; cursor: help; display: inline-block; }
 .tooltip-text {
@@ -239,9 +248,9 @@ button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 3px 6px 
     .bazi-grid { gap: 5px; }
     .mobile-scroll { overflow-x: visible; padding-bottom: 5px; }
     
-    /* ย่อขนาดเนื้อหาในกล่อง 4 เสา ให้พอดีกับจอมือถือ */
+    /* ✨ ปรับเพิ่มความสูง (Height) จาก 115px เป็น 125px เพื่อรองรับป้ายราก */
     .box { 
-        height: 115px; 
+        height: 125px; 
         padding: 5px 1px 22px 1px; 
         border-width: 1.5px;
         margin-bottom: 5px;

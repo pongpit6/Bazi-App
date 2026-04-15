@@ -160,7 +160,53 @@ const naYinDesc = {
 const iconMap = { 'wood': '🌳', 'fire': '🔥', 'earth': '⛰️', 'metal': '🪙', 'water': '💧' };
 const thTypeMap = {'wood': 'ไม้', 'fire': 'ไฟ', 'earth': 'ดิน', 'metal': 'ทอง', 'water': 'น้ำ'};
 
-// ✨ ฟังก์ชันตรวจสอบราก (Rooting & Floating)
+// ✨ ฟังก์ชันสแกนหา "ภาคีซ่อน" (Hidden Combos)
+function getHiddenComboHtml(char, level, pillar, baziData) {
+    let res = '';
+    const pillars = ['year', 'month', 'day', 'hour'];
+    
+    if (level === 'heaven') {
+        // ราศีบน แอบฮะกับ ราศีแฝง (ฟ้า-ดิน)
+        let targetGanCombo = interactions.heavenlyCombos[char]; 
+        pillars.forEach(p => {
+            if (p === pillar) return;
+            let targetZhi = baziData[p].zhi;
+            if (targetZhi === '-') return;
+            let hiddenGans = hiddenGanMap[targetZhi] || [];
+            if (hiddenGans.includes(targetGanCombo)) {
+                res += `<p style="color:#6a1b9a; font-size: 0.95em; margin-bottom: 5px;">🎭 <b>แอบฮะ (บน-ล่าง):</b> ราศีบน <b>${char}</b> แอบจับคู่กับราศีแฝง <b>${targetGanCombo}</b> ในเสา${pillarNamesTh[p]}</p>`;
+            }
+        });
+    } else {
+        // ราศีแฝง แอบฮะกับ ราศีบน หรือ ราศีแฝงอื่น (ล่าง-บน / ล่าง-ล่าง)
+        let myHiddenGans = hiddenGanMap[char] || [];
+        pillars.forEach(p => {
+            if (p === pillar) return;
+            // 1. เช็คกับราศีบนเสาอื่น
+            let otherGan = baziData[p].gan;
+            if (otherGan !== '-') {
+                myHiddenGans.forEach(mg => {
+                    if (interactions.heavenlyCombos[mg] === otherGan) {
+                        res += `<p style="color:#6a1b9a; font-size: 0.95em; margin-bottom: 5px;">🎭 <b>แอบฮะ (ล่าง-บน):</b> ราศีแฝง <b>${mg}</b> แอบจับคู่กับราศีบน <b>${otherGan}</b> ในเสา${pillarNamesTh[p]}</p>`;
+                    }
+                });
+            }
+            // 2. เช็คกับราศีแฝงเสาอื่น
+            let otherZhi = baziData[p].zhi;
+            if (otherZhi !== '-') {
+                let otherHiddenGans = hiddenGanMap[otherZhi] || [];
+                myHiddenGans.forEach(mg => {
+                    let targetCombo = interactions.heavenlyCombos[mg];
+                    if (otherHiddenGans.includes(targetCombo)) {
+                        res += `<p style="color:#6a1b9a; font-size: 0.95em; margin-bottom: 5px;">🕵️ <b>แอบฮะ (ล่าง-ล่าง):</b> ราศีแฝง <b>${mg}</b> แอบจับคู่กับราศีแฝง <b>${targetCombo}</b> ในเสา${pillarNamesTh[p]}</p>`;
+                    }
+                });
+            }
+        });
+    }
+    return res;
+}
+
 function checkStemRoot(ganChar, natalZhis) {
     if (!ganChar || ganChar === '-') return null;
     const ganType = elementMap[ganChar]?.type;
@@ -173,7 +219,6 @@ function checkStemRoot(ganChar, natalZhis) {
         const zhiChar = zhiItem.char;
         if (!zhiChar || zhiChar === '-') return;
         const hiddenGans = hiddenGanMap[zhiChar] || [];
-        // เช็คว่าในราศีแฝง มีธาตุเดียวกับราศีบนหรือไม่
         const hasSameElement = hiddenGans.some(hGan => elementMap[hGan]?.type === ganType);
         if (hasSameElement) {
             hasRoot = true;
@@ -247,7 +292,6 @@ function checkSpecialStars(branch, dayGan, yearZhi, dayZhi) {
     return stars;
 }
 
-// ✨ ปรับปรุงให้รับ rootStatus เข้ามา
 function getBoxInnerHtml(char, contextStars = [], isKongWang = false, rootStatus = null) {
     if (char === '-') return `<span class="char" style="color:#ccc;">-</span><span style="font-size:10px; color:#ccc; margin-top:5px;">(ไม่ระบุ)</span>`;
     
@@ -283,20 +327,18 @@ function getBoxInnerHtml(char, contextStars = [], isKongWang = false, rootStatus
         html += `<div class="kongwang-badge tooltip-container">🕳️<span class="tooltip-text"><b>ติดคงบ้วง (สูญสิ้น)</b><br>พลังงานเสานี้ถูกลดทอนลง ว่างเปล่า</span></div>`;
     }
 
-    // ✨ ส่วนเสริมแสดงป้าย "ราก" เฉพาะราศีบน
     if (rootStatus) {
         if (rootStatus.hasRoot) {
             let locText = rootStatus.rootLocations.map(p => pillarNamesTh[p]).join(', ');
-            html += `<div class="tooltip-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#e8f5e9; color:#2e7d32; padding:2px 4px; border-radius:4px; border:1px solid #4caf50;">🌱 มีราก</span><span class="tooltip-text" style="bottom:150%;"><b>มีรากฐานมั่นคง</b><br>พบรากในเสา: ${locText}</span></div>`;
+            html += `<div class="tooltip-container root-badge-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#e8f5e9; color:#2e7d32; padding:2px 4px; border-radius:4px; border:1px solid #4caf50;">🌱 มีราก</span><span class="tooltip-text" style="bottom:150%;"><b>มีรากฐานมั่นคง</b><br>พบรากในเสา: ${locText}</span></div>`;
         } else {
-            html += `<div class="tooltip-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#f5f5f5; color:#757575; padding:2px 4px; border-radius:4px; border:1px dashed #9e9e9e;">🍃 ลอยลม</span><span class="tooltip-text" style="bottom:150%;"><b>ลอยปลิวลม (ไร้ราก)</b><br>เป็นเพียงภาพลวงตา หรือพลังงานฉาบฉวย ไม่มั่นคง</span></div>`;
+            html += `<div class="tooltip-container root-badge-container" style="margin-top:4px; z-index:10;"><span style="font-size:10px; background:#f5f5f5; color:#757575; padding:2px 4px; border-radius:4px; border:1px dashed #9e9e9e;">🍃 ลอยลม</span><span class="tooltip-text" style="bottom:150%;"><b>ลอยปลิวลม (ไร้ราก)</b><br>เป็นเพียงภาพลวงตา หรือพลังงานฉาบฉวย ไม่มั่นคง</span></div>`;
         }
     }
 
     return html;
 }
 
-// ✨ ปรับปรุงให้คำนวณหารากตอนวาดกล่อง
 function renderBox(elementId, chineseChar, type, isEarth = false) {
     const box = document.getElementById(elementId);
     if (!box) return;
@@ -313,7 +355,7 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
 
     const data = elementMap[chineseChar] || { type: '' };
     let stars = []; let isKw = false;
-    let rootStatus = null; // สถานะราก
+    let rootStatus = null; 
 
     if (isEarth) {
         if (currentBaZiData.day && currentBaZiData.day.gan !== '-') {
@@ -323,7 +365,6 @@ function renderBox(elementId, chineseChar, type, isEarth = false) {
             isKw = true;
         }
     } else {
-        // ✨ ถ้าเป็นราศีบน (Heaven) และเป็นดวงกำเนิด (Natal) ให้เช็คราก
         if (type === 'natal' && currentBaZiData.day && currentBaZiData.day.gan !== '-') {
             const natalZhis = [
                 { pillar: 'year', char: currentBaZiData.year.zhi },
@@ -897,7 +938,7 @@ function showPopup(titleName, elementId, type) {
     const pillarData = sourceData[pillar];
     
     const char = level === 'heaven' ? pillarData.gan : pillarData.zhi;
-    if (!char || char === '-') return; // กดตรงที่ไม่มีเวลาเกิดให้เงียบไปเลย
+    if (!char || char === '-') return; 
 
     let htmlContent = `<h3>📌 ตำแหน่ง: ${pillarContextMap[pillar]} ${type === 'natal' ? `` : '(เวลาปัจจุบัน)'}</h3><hr style="margin: 10px 0; border: 0.5px solid #eee;">`;
     let relationHtml = ''; 
@@ -991,6 +1032,15 @@ function showPopup(titleName, elementId, type) {
         htmlContent += `<p style="margin-bottom: 8px; font-weight: bold; color: #f57f17;">🔍 ปฏิสัมพันธ์ (Interactions):</p>${relationHtml}</div>`;
     } else if (type === 'current' && Object.keys(currentBaZiData).length > 0) {
         htmlContent += `<div style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;"><p style="text-align:center; color:#888;">เวลาปัจจุบันไม่ได้ปะทะหรือส่งผลพิเศษกับเสานี้ครับ</p></div>`;
+    }
+
+    // ✨ สแกนแอบฮะ (เฉพาะดวงกำเนิด)
+    if (type === 'natal') {
+        let hiddenHtml = getHiddenComboHtml(char, level, pillar, currentBaZiData);
+        if (hiddenHtml !== '') {
+            htmlContent += `<div style="padding: 12px; background-color: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 8px; margin-top: 10px; font-size: 14px; line-height: 1.6;">`;
+            htmlContent += `<p style="margin-bottom: 8px; font-weight: bold; color: #7b1fa2;">🕵️‍♂️ ภาคีซ่อนเร้น (Hidden Combos):</p>${hiddenHtml}</div>`;
+        }
     }
 
     document.getElementById('popup-detail').innerHTML = htmlContent;
@@ -1357,7 +1407,6 @@ function openEncyclopedia() {
     }
     html += `</div></div>`;
 
-    // ✨ เพิ่มแท็บ กำลังรากฐาน (Rooting)
     html += `<div id="tab-roots" class="tab-content" style="display:none;">`;
     html += `<div class="encyc-section"><h3 class="encyc-title">🌱 กำลังรากฐาน (Rooting Analysis)</h3>`;
     html += `<p style="font-size:13.5px; color:#555;">วิเคราะห์ความมั่นคงของสิบเทพที่ปรากฏบนราศีบน ว่าเป็น "ของจริงที่จับต้องได้" หรือ "ภาพลวงตาที่ฉาบฉวย"</p>`;
@@ -1391,6 +1440,63 @@ function openEncyclopedia() {
     });
 
     html += rootDetails;
+    html += `</div></div>`;
+
+    // ✨ แท็บใหม่: ภาคีซ่อน (Hidden Combos) ✨
+    html += `<div id="tab-hidden-combos" class="tab-content" style="display:none;">`;
+    html += `<div class="encyc-section"><h3 class="encyc-title" style="color:#9c27b0;">🕵️‍♂️ ภาคีซ่อนเร้น (Hidden Combos)</h3>`;
+    html += `<p style="font-size:13.5px; color:#555;">ภาคีซ่อน หรือ "แอบฮะ" คือการเชื่อมโยงอย่างลับๆ ระหว่างธาตุแฝง บ่งบอกถึงความช่วยเหลือลับๆ, รายได้ซ่อนเร้น, หรือความสัมพันธ์ที่ไม่ได้เปิดเผย</p>`;
+    
+    let hiddenComboDetails = [];
+    const pKeys = ['year', 'month', 'day', 'hour'];
+    
+    // สแกน บน-ล่าง (Stem to Branch)
+    pKeys.forEach(pTop => {
+        let gan = currentBaZiData[pTop].gan;
+        if(gan === '-') return;
+        let targetCombo = interactions.heavenlyCombos[gan];
+        pKeys.forEach(pBot => {
+            let zhi = currentBaZiData[pBot].zhi;
+            if(zhi === '-') return;
+            let hGans = hiddenGanMap[zhi] || [];
+            if(hGans.includes(targetCombo)) {
+                let relation = (pTop === pBot) ? 'ฮะในเสาเดียวกัน' : `ข้ามเสา`;
+                hiddenComboDetails.push(`<div class="encyc-item" style="border-left: 3px solid #ce93d8; padding-left: 8px;">
+                    🎭 <b>ฟ้าดินแอบฮะ (${relation}):</b><br>ราศีบน <b>${gan}</b> (เสา${pillarNamesTh[pTop]}) แอบฮะกับ ราศีแฝง <b>${targetCombo}</b> ในฐาน <b>${zhi}</b> (เสา${pillarNamesTh[pBot]})<br>
+                    <span style="font-size:12.5px; color:#777;">💡 นัยยะ: ${pTop === pBot ? 'ความคิดและการกระทำสอดคล้องกัน หรือมีคนช่วยเหลือแบบลับๆ ในเรื่องนั้น' : 'มีความสัมพันธ์เกื้อหนุนข้ามสายงาน/สังคม อย่างลับๆ และมักสำเร็จเงียบๆ'}</span>
+                </div>`);
+            }
+        });
+    });
+
+    // สแกน ล่าง-ล่าง (Branch to Branch hidden combos)
+    for(let i=0; i<pKeys.length; i++) {
+        for(let j=i+1; j<pKeys.length; j++) {
+            let p1 = pKeys[i]; let p2 = pKeys[j];
+            let zhi1 = currentBaZiData[p1].zhi; let zhi2 = currentBaZiData[p2].zhi;
+            if(zhi1 === '-' || zhi2 === '-') continue;
+            
+            let hGans1 = hiddenGanMap[zhi1] || [];
+            let hGans2 = hiddenGanMap[zhi2] || [];
+            
+            hGans1.forEach(g1 => {
+                let targetCombo = interactions.heavenlyCombos[g1];
+                if(hGans2.includes(targetCombo)) {
+                     hiddenComboDetails.push(`<div class="encyc-item" style="border-left: 3px solid #8e24aa; padding-left: 8px;">
+                        🕵️ <b>ราศีแฝงแอบฮะ (ล่าง-ล่าง):</b><br>ธาตุแฝง <b>${g1}</b> (เสา${pillarNamesTh[p1]}) แอบฮะกับ ธาตุแฝง <b>${targetCombo}</b> (เสา${pillarNamesTh[p2]})<br>
+                        <span style="font-size:12.5px; color:#777;">💡 นัยยะ: สายสัมพันธ์เบื้องหลัง คอนเนคชั่นลับๆ หรืออาจมีความสัมพันธ์เชิงชู้สาว/ธุรกิจลับ ข้ามระหว่างสองเรื่องนี้</span>
+                     </div>`);
+                }
+            });
+        }
+    }
+
+    if (hiddenComboDetails.length > 0) {
+        html += hiddenComboDetails.join('');
+    } else {
+        html += `<p>ดวงชะตานี้ไม่มีภาคีซ่อนเร้นที่ชัดเจน (มักเป็นคนเปิดเผย ตรงไปตรงมา ไม่มีลับลมคมใน)</p>`;
+    }
+    
     html += `</div></div>`;
 
     document.getElementById('encyclopedia-detail').innerHTML = html;
@@ -1524,7 +1630,6 @@ function openGlossary() {
              </div>`;
     html += `</div>`;
 
-    // ✨ เพิ่มเนื้อหาเรื่องรากแฝง
     html += `<div id="glos-roots" class="tab-content-glos" style="display:none;">`;
     html += `<div class="glos-section"><h3 class="glos-title">🌱 พลังรากแฝง (Rooting & Floating)</h3>
              <p style="font-size:14px; line-height:1.6;">ในวิชาปาจื้อ <b>"ราศีบน" (สวรรค์)</b> คือสิ่งที่แสดงออกให้คนภายนอกเห็น ส่วน <b>"ราศีล่าง" (พื้นดิน)</b> คือความจริงที่ซ่อนอยู่</p>
@@ -1538,6 +1643,23 @@ function openGlossary() {
              - <b>ธาตุดิน</b> (戊, 己) มีรากเมื่อฐานล่างมี ฉลู(丑), มะโรง(辰), มะแม(未), จอ(戌), มะเมีย(午), มะเส็ง(巳), ขาล(寅), วอก(申)<br>
              - <b>ธาตุทอง</b> (庚, 辛) มีรากเมื่อฐานล่างมี วอก(申), ระกา(酉), ฉลู(丑), จอ(戌), มะเส็ง(巳)<br>
              - <b>ธาตุน้ำ</b> (壬, 癸) มีรากเมื่อฐานล่างมี ชวด(子), กุน(亥), ฉลู(丑), มะโรง(辰), วอก(申)
+             </p>
+             </div>`;
+    html += `</div>`;
+
+    // ✨ แท็บใหม่: ภาคีซ่อน ในพจนานุกรม
+    html += `<div id="glos-hidden-combos" class="tab-content-glos" style="display:none;">`;
+    html += `<div class="glos-section"><h3 class="glos-title" style="color:#9c27b0;">🎭 ภาคีซ่อนเร้น (แอบฮะ)</h3>
+             <p style="font-size:14px; line-height:1.6;"><b>แอบฮะ (Hidden Combos)</b> คือการที่ "ราศีบน ไปจับคู่กับ ราศีแฝงด้านล่าง" หรือ "ราศีแฝงด้านล่าง จับคู่กันเอง" โดยใช้กฎของ <b>ภาคีฟ้า 5 คู่</b> (甲-己, 乙-庚, 丙-辛, 丁-壬, 戊-癸) ในการจับคู่</p>
+             <p style="font-size:14px; line-height:1.6; margin-top:10px;"><b>นัยยะของการแอบฮะ:</b></p>
+             <ul style="font-size:14px; line-height:1.8;">
+                <li><b>ความช่วยเหลือลับๆ:</b> มีคนหนุนหลังแต่ไม่เปิดเผยตัว หรือได้ผลประโยชน์โดยไม่มีใครรู้</li>
+                <li><b>รายได้ซ่อนเร้น:</b> เงินใต้โต๊ะ, รายได้พิเศษที่ไม่ได้บอกใคร, หรือทรัพย์สินที่ซ่อนไว้</li>
+                <li><b>ความสัมพันธ์ลับ:</b> การคบหาดูใจกันอย่างเงียบๆ, รักซ้อน, หรือมีสายสัมพันธ์พิเศษข้ามสายงานข้ามแผนก</li>
+             </ul>
+             <p style="font-size:14px; line-height:1.6; margin-top:10px; padding:10px; background:#f3e5f5; border-radius:6px; border-left:3px solid #ce93d8;">
+             <b>ตัวอย่าง:</b> หากราศีบนของเสาเดือน (การงาน) คือ <b>丙 (ไฟ)</b> และราศีแฝงในเสาวัน (คู่ครอง) มีธาตุ <b>辛 (ทอง)</b> ซ่อนอยู่ -> เกิดการแอบฮะกันระหว่าง 丙-辛 💧<br>
+             <i>ตีความได้ว่า:</i> คู่ครองอาจแอบช่วยเรื่องงานของคุณ หรือคุณอาจพบรักกับคนในที่ทำงานอย่างลับๆ เป็นต้น
              </p>
              </div>`;
     html += `</div>`;
